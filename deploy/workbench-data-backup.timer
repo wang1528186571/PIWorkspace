@@ -1,0 +1,10 @@
+[Unit]
+Description=Research Workbench data backup schedule
+
+[Timer]
+# 每 5 分钟兜底一次（保存后的实时备份由 workbench.py 钩子负责）
+OnCalendar=*-*-* *:0/5:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

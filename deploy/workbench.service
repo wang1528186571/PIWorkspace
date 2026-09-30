@@ -1,0 +1,11 @@
+[Unit]
+Description=Research Workbench (stdlib dashboard)
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /opt/workbench/server/workbench.py --host 127.0.0.1 --port 8900 --data-dir /opt/workbench/data
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

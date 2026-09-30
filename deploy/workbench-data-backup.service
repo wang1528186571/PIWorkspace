@@ -1,0 +1,7 @@
+[Unit]
+Description=Research Workbench data backup to GitHub
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/workbench/scripts/data_backup.sh

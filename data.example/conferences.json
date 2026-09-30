@@ -1,0 +1,19 @@
+{
+ "updated": "2026-09-30",
+ "source": "ccfddl (github.com/ccfddl/ccf-deadlines)",
+ "conferences": [
+  {
+   "id": "cvpr27",
+   "abbr": "CVPR",
+   "year": 2027,
+   "rank": "CCF-A",
+   "full": "IEEE/CVF Conference on Computer Vision and Pattern Recognition",
+   "abstract_deadline": "2026-11-10",
+   "deadline": "2026-11-16",
+   "timezone": "UTC-12",
+   "date": "2027-06-20 ~ 06-25",
+   "place": "Seattle, USA",
+   "link": "https://cvpr.thecvf.com/Conferences/2027"
+  }
+ ]
+}

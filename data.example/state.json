@@ -1,0 +1,47 @@
+{
+ "tasks": [
+  {
+   "id": "demo1",
+   "text": "示例：跑通某个 baseline 并记录结果",
+   "due": "",
+   "done": false,
+   "created": "2026-09-30T10:00:00.000Z"
+  },
+  {
+   "id": "demo2",
+   "text": "示例：读一篇相关论文，做一页笔记",
+   "due": "2026-10-03",
+   "done": false,
+   "created": "2026-09-30T10:01:00.000Z"
+  },
+  {
+   "id": "demo3",
+   "text": "示例：已完成的事项（勾选后置灰）",
+   "due": "",
+   "done": true,
+   "created": "2026-09-29T09:00:00.000Z"
+  }
+ ],
+ "targets": [
+  {
+   "id": "demog1",
+   "name": "示例会议 2027",
+   "deadline": "2027-01-20",
+   "note": "示例条目：替换成你的真实投稿目标",
+   "archived": false
+  }
+ ],
+ "problems": [
+  {
+   "id": "demop1",
+   "title": "示例：某个实验结果不符合预期",
+   "detail": "这里写细节和线索，解决后勾选划掉。",
+   "open": true,
+   "created": "2026-09-30T10:02:00.000Z"
+  }
+ ],
+ "checkins": [],
+ "retros": [],
+ "projects": [],
+ "rprojects": []
+}

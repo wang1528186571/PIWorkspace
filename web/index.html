@@ -1,0 +1,1127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PIWorkspace</title>
+<style>
+:root{
+  --bg:#f4f1e8; --card:#ffffff; --line:#e9e2d2; --line2:#f0ebdf;
+  --txt:#3b3226; --dim:#8d8371; --faint:#b3a992;
+  --accent:#8a6d3b; --accent-bg:#f6efe2;
+  --orange:#d98a3d; --slate:#6b8aa8; --purple:#9186bd; --red:#cf5b4e; --green:#5f9e6f; --blue:#5f89b8;
+}
+*{box-sizing:border-box; margin:0; padding:0}
+html{height:100%}
+body{
+  font:15px/1.65 -apple-system,"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",sans-serif;
+  color:var(--txt); background:var(--bg); min-height:100%;
+}
+/* ---------- 侧栏 ---------- */
+#side{
+  position:fixed; left:16px; top:16px; bottom:16px; width:206px; z-index:30;
+  background:var(--card); border:1px solid var(--line); border-radius:18px;
+  padding:20px 14px 14px; display:flex; flex-direction:column; gap:4px;
+  box-shadow:0 4px 18px rgba(90,75,50,.06);
+}
+.brand{padding:2px 10px 0; font-weight:800; font-size:17px}
+.brand small{display:block; font-size:11px; color:var(--faint); font-weight:400; margin-top:1px}
+#clock{margin:12px 10px 8px; font-size:12px; color:var(--dim); line-height:1.5;
+  background:var(--accent-bg); border-radius:10px; padding:7px 10px}
+#clock b{font-size:15px; color:var(--accent); font-weight:700}
+.navg{font-size:11px; color:var(--faint); letter-spacing:2px; padding:12px 12px 4px}
+#side nav a{
+  display:flex; align-items:center; gap:8px; padding:8px 12px; margin:1px 0;
+  border-radius:10px; color:var(--dim); text-decoration:none; font-size:14px;
+  transition:all .12s;
+}
+#side nav a:hover{background:var(--accent-bg); color:var(--txt)}
+#side nav a.on{background:linear-gradient(135deg,#8a6d3b,#a4854f); color:#fff; font-weight:600}
+#side .foot{margin-top:auto; padding:8px 12px 2px; font-size:11px; color:var(--faint)}
+/* ---------- 主区 ---------- */
+main{margin-left:252px; padding:26px 34px 70px}
+section{display:none}
+section.on{display:block; animation:fade .18s ease}
+@keyframes fade{from{opacity:0; transform:translateY(4px)}to{opacity:1}}
+.h1{font-size:24px; font-weight:800; letter-spacing:.5px}
+.hsub{color:var(--dim); font-size:13px; margin:2px 0 16px}
+.chips{display:flex; gap:8px; flex-wrap:wrap; margin:0 0 18px}
+.chip{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:7px 14px; text-decoration:none; display:inline-flex; flex-direction:column; gap:1px; min-width:86px}
+a.chip:hover{border-color:var(--accent)}
+.chip span{font-size:11px; color:var(--dim)}
+.chip b{font-size:17px; font-weight:800; color:var(--accent)}
+.chip b small{font-size:11px; color:var(--faint); font-weight:400; margin-left:2px}
+.chip.warn b{color:var(--red)}
+.home-head{display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:16px}
+.home-head .chips{margin:2px 0 0}
+.hero-days{font-size:34px; font-weight:800; color:var(--accent); line-height:1.1}
+.card{
+  background:var(--card); border:1px solid var(--line); border-radius:16px;
+  padding:18px 20px; margin-bottom:16px; box-shadow:0 3px 14px rgba(90,75,50,.05);
+}
+.card h3{font-size:14px; color:var(--dim); font-weight:700; letter-spacing:.5px; margin-bottom:10px; display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.card h3 .hint{font-size:12px; color:var(--faint); font-weight:400}
+.btnrow{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px}
+button{
+  border:none; border-radius:10px; padding:9px 18px; font:inherit; font-size:14px; font-weight:600;
+  cursor:pointer; color:#fff; transition:filter .15s, opacity .15s;
+}
+button:hover{filter:brightness(1.08)}
+button:disabled{opacity:.4; cursor:not-allowed}
+button.b-in{background:var(--orange)}
+button.b-out{background:var(--slate)}
+button.b-leave{background:var(--purple)}
+button.ghost{background:#fff; color:var(--dim); border:1px solid var(--line); font-weight:500}
+button.ghost.on{background:var(--accent); color:#fff; border-color:var(--accent)}
+.badge.p-hi{color:var(--red); border-color:#ecc8c2; background:#fbf0ee}
+.badge.p-mid{color:var(--blue); border-color:#ccdcea; background:#eef4fa}
+.badge.p-low{color:var(--faint)}
+button.mini{padding:4px 12px; font-size:12.5px; border-radius:8px}
+button.ghost:hover{color:var(--txt)}
+input[type=text],input[type=date],textarea,select{
+  background:#fbf9f3; border:1px solid var(--line); border-radius:10px;
+  color:var(--txt); padding:9px 12px; font:inherit; font-size:14px; outline:none; min-width:0;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+form.add{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px}
+form.add input[type=text].grow{flex:1 1 220px}
+form.add button{background:var(--accent)}
+ul.list{list-style:none}
+ul.list li{display:flex; align-items:flex-start; gap:10px; padding:9px 2px; border-bottom:1px dashed var(--line2)}
+ul.list li:last-child{border-bottom:none}
+ul.list li.done{opacity:.45}
+ul.list li.done .txt{text-decoration:line-through}
+.chk{margin-top:5px; width:16px; height:16px; accent-color:var(--accent); cursor:pointer; flex:none}
+.txt{flex:1; word-break:break-word}
+.meta{font-size:12px; color:var(--faint); margin-top:1px}
+.badge{display:inline-block; font-size:11.5px; padding:1px 9px; border-radius:999px;
+  border:1px solid var(--line); color:var(--dim); white-space:nowrap; flex:none; margin-top:2px}
+.badge.soon{color:var(--red); border-color:#ecc8c2; background:#fbf0ee}
+.badge.ok{color:var(--green); border-color:#cfe3d3; background:#eff7f0}
+.badge.info{color:var(--blue); border-color:#ccdcea; background:#eef4fa}
+.badge.lv{color:var(--purple); border-color:#dcd6ec; background:#f4f1fa}
+.del{background:none; border:none; color:var(--faint); font-size:15px; cursor:pointer; padding:0 4px; flex:none}
+.del:hover{color:var(--red)}
+.empty{color:var(--faint); text-align:center; padding:22px 0; font-size:13.5px}
+.grid2{display:grid; grid-template-columns:1fr 232px; gap:16px}
+.stats{display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; margin-bottom:14px}
+.stat{background:#fbf9f3; border:1px solid var(--line2); border-radius:12px; padding:10px 14px}
+.stat .n{font-size:21px; font-weight:800; color:var(--accent)}
+.stat .n.warn{color:var(--red)}
+.stat .l{font-size:12px; color:var(--dim)}
+/* ---------- 会议卡 ---------- */
+.confgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px}
+.conf{background:#fbf9f3; border:1px solid var(--line2); border-radius:14px; padding:16px 18px}
+.conf .top{display:flex; align-items:baseline; gap:10px; margin-bottom:2px}
+.conf .abbr{font-size:21px; font-weight:800}
+.conf .full{font-size:12px; color:var(--dim); margin-bottom:10px}
+.conf .row{display:flex; justify-content:space-between; align-items:center; padding:5px 0; font-size:13.5px; border-top:1px dashed var(--line2)}
+.conf .row span:first-child{color:var(--dim)}
+.conf a{color:var(--blue); text-decoration:none; font-size:12.5px}
+.src{font-size:11.5px; color:var(--faint); margin-top:8px}
+.subtabs{display:flex; gap:6px; flex-wrap:wrap; margin:2px 0 14px}
+.subtabs a{padding:6px 16px; border-radius:999px; background:#fff; border:1px solid var(--line);
+  color:var(--dim); font-size:13.5px; cursor:pointer; text-decoration:none; transition:all .12s}
+.subtabs a:hover{color:var(--txt); border-color:var(--accent)}
+.subtabs a.on{background:var(--accent); color:#fff; border-color:var(--accent); font-weight:600}
+.artgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px}
+.artgrid figure{margin:0; background:#fbf9f3; border:1px solid var(--line2); border-radius:12px; padding:8px}
+.artgrid img{width:100%; height:auto; border-radius:8px; display:block}
+.artgrid figcaption{font-size:12px; color:var(--dim); margin-top:6px}
+li.topic .txt{cursor:pointer}
+li.topic .txt:hover b{color:var(--accent)}
+/* ---------- 表格 ---------- */
+.miniscroll{overflow-x:auto}
+table{border-collapse:collapse; font-size:13.5px; min-width:100%}
+th,td{padding:7px 12px; border:1px solid var(--line2); text-align:center; white-space:nowrap}
+th{background:#f6f2e8; color:var(--dim); font-weight:600}
+td:first-child,th:first-child{text-align:left; position:sticky; left:0; background:#f6f2e8; font-weight:600}
+th.ghead{background:#efe9da; color:var(--faint); font-size:12px; letter-spacing:1px}
+.updated{font-size:12px; color:var(--faint); margin:4px 0 10px}
+.tcard .tt{font-size:15.5px; font-weight:700; margin-bottom:2px}
+.tcard .tn{font-size:12.5px; color:var(--dim); margin-bottom:8px; white-space:pre-wrap}
+@media (max-width:900px){
+  .home-head{flex-direction:column}
+  #side{position:static; width:auto; margin:12px; flex-direction:row; flex-wrap:wrap; align-items:center; padding:10px 12px; gap:2px}
+  .brand small,#clock,#side .foot,.navg{display:none}
+  #side nav{display:flex; flex-wrap:wrap; gap:4px; margin-left:auto}
+  #side nav a{padding:6px 11px; font-size:13px}
+  main{margin-left:0; padding:8px 14px 60px}
+  .grid2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<aside id="side">
+  <div class="brand">🧪 PIWorkspace<small>科研工作台 · Research Workbench</small></div>
+  <div id="clock"></div>
+  <nav>
+    <div class="navg">今日</div>
+    <a href="#home" data-v="home">🏠 今日</a>
+    <div class="navg">执行</div>
+    <a href="#tasks" data-v="tasks">✅ 项目任务</a>
+    <a href="#proj" data-v="proj">📄 学术论文</a>
+    <a href="#rproj" data-v="rproj">🧪 科研项目</a>
+    <div class="navg">管理</div>
+    <a href="#conf" data-v="conf">🎯 投稿管理</a>
+    <a href="#problems" data-v="problems">🔥 当前问题</a>
+    <div class="navg">统计</div>
+    <a href="#retro" data-v="retro">📝 每日复盘</a>
+    <a href="#stats" data-v="stats">📊 数据统计</a>
+  </nav>
+  <div class="foot">数据存于 500M 服务器<br>多端实时同步</div>
+</aside>
+<main>
+  <!-- ============ 今日 ============ -->
+  <section id="v-home">
+    <div class="home-head">
+      <div>
+        <div class="h1">今日执行舱</div>
+        <div class="hsub" id="home-date" style="margin-bottom:0"></div>
+      </div>
+      <div class="chips" id="home-chips"></div>
+    </div>
+
+    <div class="card">
+      <h3 style="display:flex; align-items:center; flex-wrap:wrap; gap:8px">
+        <span>📈 主题统计</span>
+        <span class="hint" id="home-stat-span"></span>
+        <span id="home-stat-range" style="margin-left:auto; display:flex; gap:6px">
+          <button class="mini ghost on" data-r="day" type="button">每日</button>
+          <button class="mini ghost" data-r="week" type="button">每周</button>
+          <button class="mini ghost" data-r="month" type="button">每月</button>
+          <button class="mini ghost" data-r="year" type="button">每年</button>
+        </span>
+      </h3>
+      <div class="stats" id="home-stat-cards"></div>
+    </div>
+
+    <div class="card">
+      <h3>⏱ 打卡记录 <span class="hint">一天内可多次开始 / 结束工作；请假只记一笔，不计入工时</span></h3>
+      <div class="btnrow">
+        <button class="b-in" id="btn-in">▶ 开始工作 · 到位打卡</button>
+        <button class="b-out" id="btn-out">⏹ 结束工作 · 离开打卡</button>
+        <button class="b-leave" id="btn-leave">🏖 请假</button>
+      </div>
+      <div class="stats" id="ck-stats"></div>
+      <div class="grid2">
+        <div>
+          <div style="font-size:13px; color:var(--dim); margin-bottom:6px">今日打卡 / 请假明细</div>
+          <ul class="list" id="ck-list"></ul>
+        </div>
+        <div>
+          <div style="font-size:13px; color:var(--dim); margin-bottom:6px">可快速修正</div>
+          <div style="display:flex; flex-direction:column; gap:8px">
+            <button class="ghost mini" id="fix-close">关闭今天仍未结束工作段</button>
+            <button class="ghost mini" id="fix-clear">清空今日打卡记录</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🗂 今日执行 <span class="hint">截止今天或最近创建的待办</span></h3>
+      <form class="add" id="f-today">
+        <input type="text" class="grow" id="t2-text" placeholder="临时任务，如：修实验图、回复审稿…" autocomplete="off">
+        <button type="submit">添加</button>
+      </form>
+      <ul class="list" id="today-list"></ul>
+    </div>
+    <div class="card" id="hero-conf" style="cursor:pointer" onclick="location.hash='#conf'" title="点开查看投稿管理">
+      <div style="display:flex; align-items:center; gap:22px; flex-wrap:wrap">
+        <div style="text-align:center; min-width:96px">
+          <div class="hero-days" id="hc-days"></div>
+          <div style="font-size:12px; color:var(--dim)" id="hc-kind"></div>
+        </div>
+        <div style="flex:1; min-width:220px">
+          <div style="font-weight:700; font-size:17px; margin-bottom:3px" id="hc-name"></div>
+          <div style="font-size:12.5px; color:var(--dim); line-height:1.8" id="hc-detail"></div>
+        </div>
+        <button class="ghost mini" type="button">全部会议 →</button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ 项目任务 ============ -->
+  <section id="v-tasks">
+    <div class="h1">项目任务</div>
+    <div class="hsub">做了什么、接下来干什么——随手记，多端同步</div>
+    <div class="card">
+      <div class="stats" id="task-stats"></div>
+      <form class="add" id="f-task">
+        <input type="text" class="grow" id="t-text" placeholder="要干的事…" autocomplete="off">
+        <input type="date" id="t-due" title="截止日（可选）">
+        <select id="t-prio" title="优先级">
+          <option value="">优先级</option>
+          <option value="高">高</option>
+          <option value="中">中</option>
+          <option value="低">低</option>
+        </select>
+        <button type="submit">添加</button>
+      </form>
+      <ul class="list" id="task-list"></ul>
+    </div>
+  </section>
+
+  <!-- ============ 投稿管理 ============ -->
+  <section id="v-conf">
+    <div class="h1">投稿管理</div>
+    <div class="hsub">会议截止日历 + 自己的投稿目标</div>
+    <div class="card">
+      <h3>📅 会议日历 <span class="hint" id="conf-updated"></span></h3>
+      <div class="confgrid" id="conf-wrap"></div>
+    </div>
+    <div class="card">
+      <h3>🎯 我的投稿目标</h3>
+      <form class="add" id="f-target">
+        <input type="text" class="grow" id="g-name" placeholder="目标名称，如 ICLR 2027" autocomplete="off">
+        <input type="date" id="g-dl">
+        <input type="text" id="g-note" placeholder="备注（可选）" style="flex:1 1 160px" autocomplete="off">
+        <button type="submit">添加</button>
+      </form>
+      <ul class="list" id="target-list"></ul>
+    </div>
+  </section>
+
+  <!-- ============ 当前问题 ============ -->
+  <section id="v-problems">
+    <div class="h1">当前问题</div>
+    <div class="hsub">卡住的事、待解决的问题——解决一条划掉一条</div>
+    <div class="card">
+      <form class="add" id="f-problem" style="align-items:flex-start">
+        <input type="text" class="grow" id="p-title" placeholder="问题描述（一句话标题）" autocomplete="off">
+        <textarea id="p-detail" rows="2" placeholder="细节/线索（可选）" style="flex:1 1 100%"></textarea>
+        <button type="submit">添加</button>
+      </form>
+      <ul class="list" id="problem-list"></ul>
+    </div>
+  </section>
+
+  <!-- ============ 学术论文 ============ -->
+  <section id="v-proj">
+    <div class="h1">学术论文</div>
+    <div class="hsub">登记你的学术论文——名字、状态、一句话说明；点开可看表格与图片</div>
+    <div class="card">
+      <div class="stats" id="proj-stats"></div>
+      <form class="add" id="f-proj">
+        <input type="text" class="grow" id="pj-name" placeholder="论文题目，如 XXX：副标题" autocomplete="off">
+        <select id="pj-status">
+          <option value="进行中">进行中</option>
+          <option value="暂停">暂停</option>
+          <option value="已完成">已完成</option>
+        </select>
+        <input type="text" id="pj-note" placeholder="备注（可选）" style="flex:1 1 160px" autocomplete="off">
+        <button type="submit">添加</button>
+      </form>
+      <ul class="list" id="proj-list"></ul>
+    </div>
+    <div class="card" id="proj-untagged-card" style="display:none">
+      <h3>📄 未归类表格 <span class="hint">推送时未指定课题的表格，可在 tables.json 里加 "topic" 字段归类</span></h3>
+      <div id="proj-untagged"></div>
+    </div>
+  </section>
+
+  <!-- ============ 科研项目 ============ -->
+  <section id="v-rproj">
+    <div class="h1">科研项目</div>
+    <div class="hsub">登记科研项目 / 工程——数据管线、代码库、benchmark 等</div>
+    <div class="card">
+      <div class="stats" id="rproj-stats"></div>
+      <form class="add" id="f-rproj">
+        <input type="text" class="grow" id="rj-name" placeholder="项目名称，如 某数据管线" autocomplete="off">
+        <select id="rj-status">
+          <option value="进行中">进行中</option>
+          <option value="暂停">暂停</option>
+          <option value="已完成">已完成</option>
+        </select>
+        <input type="text" id="rj-note" placeholder="备注（可选）" style="flex:1 1 160px" autocomplete="off">
+        <button type="submit">添加</button>
+      </form>
+      <ul class="list" id="rproj-list"></ul>
+    </div>
+  </section>
+
+  <!-- ============ 课题详情 ============ -->
+  <section id="v-projdet">
+    <button class="ghost mini" style="margin-bottom:12px" onclick="location.hash='#proj'">← 返回科研工作</button>
+    <div class="h1" id="pd-name"></div>
+    <div class="hsub" id="pd-meta"></div>
+    <div class="subtabs" id="pd-tabs" style="display:none"></div>
+    <div class="card">
+      <h3>📊 数据表格 <span class="hint">由工作站推送，topic 字段匹配课题名即归入此处</span></h3>
+      <div id="pd-tables"></div>
+    </div>
+    <div class="card">
+      <h3>🖼 图片 <span class="hint">push_artifacts.py 推送并指定课题</span></h3>
+      <div class="artgrid" id="pd-artifacts"></div>
+    </div>
+  </section>
+
+  <!-- ============ 每日复盘 ============ -->
+  <section id="v-retro">
+    <div class="h1">每日复盘</div>
+    <div class="hsub">今天做了什么、卡在哪、明天重点——一天一条，同日重填即覆盖</div>
+    <div class="card">
+      <form class="add" id="f-retro" style="align-items:flex-start">
+        <input type="date" id="r-date" style="flex:0 0 150px">
+        <input type="text" class="grow" id="r-done" placeholder="✅ 今日完成（一句话）" autocomplete="off">
+        <input type="text" class="grow" id="r-block" placeholder="🧱 卡点 / 经验" autocomplete="off">
+        <input type="text" class="grow" id="r-next" placeholder="➡️ 明日重点" autocomplete="off">
+        <button type="submit">保存</button>
+      </form>
+      <ul class="list" id="retro-list"></ul>
+    </div>
+  </section>
+
+  <!-- ============ 数据统计 ============ -->
+  <section id="v-stats">
+    <div class="h1">数据统计</div>
+    <div class="hsub">从打卡与任务自动汇总，无需手动记录</div>
+    <div class="card">
+      <div class="btnrow" id="stat-range">
+        <button class="mini ghost on" data-r="day">今日</button>
+        <button class="mini ghost" data-r="week">本周</button>
+        <button class="mini ghost" data-r="month">本月</button>
+        <button class="mini ghost" data-r="year">本年</button>
+        <span class="meta" id="stat-span" style="margin-left:6px"></span>
+      </div>
+      <div class="stats" id="stat-cards"></div>
+      <div style="font-size:13px;color:var(--dim);margin:6px 0 4px" id="chart-title"></div>
+      <div id="chart" style="display:flex;align-items:flex-end;gap:4px;height:130px;padding:4px 2px 0"></div>
+    </div>
+  </section>
+
+</main>
+<script>
+"use strict";
+function esc(s){
+  return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+/* 统一按北京时间(UTC+8)处理日期 */
+function cstShift(d){ return new Date(d.getTime() + (480 + d.getTimezoneOffset())*60000); }
+function today(){ return cstShift(new Date()).toISOString().slice(0,10); }
+function hhmm(iso){ var d=cstShift(new Date(iso)); return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2); }
+function isToday(iso){ return today()===cstShift(new Date(iso)).toISOString().slice(0,10); }
+function ddays(dateStr){
+  if(!dateStr) return null;
+  var a=new Date(today()+"T00:00:00"), b=new Date(String(dateStr).slice(0,10)+"T00:00:00");
+  return Math.round((b-a)/86400000);
+}
+function fmtDur(min){
+  min=Math.max(0,Math.round(min));
+  if(min<60) return min+"分";
+  return Math.floor(min/60)+"时"+(min%60)+"分";
+}
+var state={tasks:[],targets:[],problems:[],checkins:[],retros:[],projects:[],rprojects:[]};
+var confCache={conferences:[]};
+var uid=(function(){var n=Date.now();return function(){return "id"+(++n)+Math.floor(Math.random()*99)}})();
+var WEEK=["周日","周一","周二","周三","周四","周五","周六"];
+
+function markSync(msg,err){
+  var el=document.getElementById("sync"); if(!el) return;
+  el.textContent=msg? "· "+msg : ""; el.className=err?"err":"";
+}
+
+/* ================= 数据读写 ================= */
+function safe(fn){ return function(){ try{ fn(); }catch(err){ console.error("render error", err); } }; }
+function renderAll(){
+  safe(renderTasks)(); safe(renderTargets)(); safe(renderProblems)();
+  safe(renderHome)(); safe(renderProj)(); safe(renderRproj)(); safe(renderRetro)();
+}
+var loadRetry=0;
+function loadData(){
+  fetch("/api/data",{cache:"no-store"}).then(function(r){return r.json()}).then(function(d){
+    loadRetry=0;
+    state={tasks:d.tasks||[],targets:d.targets||[],problems:d.problems||[],checkins:d.checkins||[],retros:d.retros||[],projects:d.projects||[],rprojects:d.rprojects||[]};
+    renderAll();
+    route();
+  }).catch(function(){
+    if(loadRetry<5){ loadRetry++; markSync&&markSync("加载失败，重试中…",true); setTimeout(loadData, 1500*loadRetry); }
+    else markSync&&markSync("加载失败，请刷新重试",true);
+  });
+}
+function saveData(){
+  fetch("/api/data",{
+    method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(state)
+  }).catch(function(){});
+}
+
+/* ================= 侧栏时钟 ================= */
+function tick(){
+  var d=cstShift(new Date());
+  var el=document.getElementById("clock");
+  if(el) el.innerHTML=d.getFullYear()+"年"+(d.getMonth()+1)+"月"+d.getDate()+"日 "+WEEK[d.getDay()]+
+    "<br><b>"+("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2)+":"+("0"+d.getSeconds()).slice(-2)+"</b> 北京时间";
+  var hd=document.getElementById("home-date");
+  if(hd) hd.textContent=d.getFullYear()+"年"+(d.getMonth()+1)+"月"+d.getDate()+"日 "+WEEK[d.getDay()];
+}
+setInterval(tick,1000);
+
+/* ================= 打卡 ================= */
+function openSegment(){
+  var open=null;
+  state.checkins.forEach(function(c){ if(c.type==="in") open=c; else if(c.type==="out") open=null; });
+  return open;
+}
+function todayItems(){
+  return state.checkins.filter(function(c){return isToday(c.ts)}).sort(function(a,b){return a.ts.localeCompare(b.ts)});
+}
+function workMinutesToday(){
+  var min=0, open=null;
+  todayItems().forEach(function(c){
+    if(c.type==="in") open=new Date(c.ts);
+    else if(c.type==="out"&&open){ min+=(new Date(c.ts)-open)/60000; open=null; }
+  });
+  return min;
+}
+function addCheckin(type){
+  state.checkins.push({id:uid(),type:type,ts:new Date().toISOString()});
+  renderHome(); saveData();
+}
+function delCheckin(id){
+  state.checkins=state.checkins.filter(function(c){return c.id!==id});
+  renderHome(); saveData();
+}
+function renderHome(){
+  /* 统计 chips */
+  var openTasks=state.tasks.filter(function(t){return !t.done}).length;
+  var doneTasks=state.tasks.filter(function(t){return t.done}).length;
+  var dur=fmtDur(workMinutesToday());
+  var openP=state.problems.filter(function(p){return p.open}).length;
+  document.getElementById("home-chips").innerHTML=
+    '<a class="chip" href="#tasks"><span>待办</span><b>'+openTasks+'<small>项</small></b></a>'+
+    '<a class="chip" href="#tasks"><span>已完成</span><b>'+doneTasks+'<small>项</small></b></a>'+
+    '<a class="chip" href="#proj"><span>学术论文</span><b>'+state.projects.length+'<small>篇</small></b></a>'+
+    '<a class="chip" href="#rproj"><span>科研项目</span><b>'+state.rprojects.length+'<small>个</small></b></a>'+
+    '<a class="chip" href="#problems"><span>待解决问题</span><b>'+openP+'<small>个</small></b></a>';
+  renderHeroConf();
+  renderHomeStats();
+  /* 打卡统计 */
+  var items=todayItems();
+  var leaves=items.filter(function(c){return c.type==="leave"}).length;
+  var open=openSegment();
+  document.getElementById("ck-stats").innerHTML=
+    stat(items.filter(function(c){return c.type!=="leave"}).length,"今日打卡次数")+
+    stat(fmtDur(workMinutesToday()),"今日工作时长")+
+    stat(open?1:0,"未结束工作段",open?"warn":"")+
+    stat(leaves,"今日请假");
+  /* 按钮 */
+  document.getElementById("btn-in").disabled=!!open;
+  document.getElementById("btn-out").disabled=!open;
+  /* 明细 */
+  var ul=document.getElementById("ck-list");
+  if(!items.length){ul.innerHTML='<div class="empty">今天还没有打卡记录</div>';}
+  else{
+    ul.innerHTML=items.map(function(c){
+      var label=c.type==="in"?"开始工作":(c.type==="out"?"结束工作":"请假");
+      var cls=c.type==="leave"?"lv":(c.type==="in"?"info":"");
+      return '<li><span class="badge '+cls+'">'+label+'</span>'+
+        '<div class="txt">'+hhmm(c.ts)+'</div>'+
+        '<button class="del" onclick="delCheckin(\''+c.id+'\')" title="删除">×</button></li>';
+    }).join("");
+  }
+}
+function renderHeroConf(){
+  var el=document.getElementById("hero-conf"); if(!el) return;
+  var best=null;
+  (confCache.conferences||[]).forEach(function(c){
+    [["abstract_deadline","摘要"],["deadline","全文"]].forEach(function(pr){
+      if(!c[pr[0]]) return;
+      var n=ddays(c[pr[0]]);
+      if(n!=null&&n>=0&&(!best||n<best.n)) best={n:n,c:c,kind:pr[1]};
+    });
+  });
+  if(!best){ el.style.display="none"; return; }
+  el.style.display="block";
+  var c=best.c;
+  document.getElementById("hc-days").textContent="D-"+best.n;
+  document.getElementById("hc-days").style.color=best.n<=21?"var(--red)":"var(--accent)";
+  document.getElementById("hc-kind").textContent="距 "+(c.abbr||"会议")+" "+best.kind+" 截止";
+  document.getElementById("hc-name").textContent=(c.abbr||"")+" "+(c.year||"")+(c.rank?" · "+c.rank:"");
+  document.getElementById("hc-detail").innerHTML=
+    "摘要截止 <b>"+esc(c.abstract_deadline||"—")+"</b> · 全文截止 <b>"+esc(c.deadline||"—")+"</b><br>"+
+    esc(c.date||"")+" · "+esc(c.place||"");
+}
+var homeRange="day";
+function rangeCards(kind){
+  var r=rangeFor(kind), s2=r[0], e2=r[1];
+  var min=workMinIn(s2,e2);
+  function dIn(iso){ return inRange(cstShift(new Date(iso)).toISOString().slice(0,10),s2,e2); }
+  var outs=state.checkins.filter(function(c){return c.type==="out"&&dIn(c.ts)}).length;
+  var leaves=state.checkins.filter(function(c){return c.type==="leave"&&dIn(c.ts)}).length;
+  var doneN=state.tasks.filter(function(t){return t.done&&t.completed_at&&dIn(t.completed_at)}).length;
+  var addN=state.tasks.filter(function(t){return inRange((t.created||"").slice(0,10),s2,e2)}).length;
+  var openP=state.problems.filter(function(p){return p.open}).length;
+  return {span:(s2===e2?s2:s2+" ~ "+e2),
+    html:stat(fmtDur(min),"工作时长")+stat(outs,"结束打卡")+stat(leaves,"请假")+
+         stat(doneN,"完成任务")+stat(addN,"新增任务")+stat(openP,"未解决问题",openP?"warn":"")};
+}
+function renderHomeStats(){
+  var spanEl=document.getElementById("home-stat-span");
+  var cardsEl=document.getElementById("home-stat-cards");
+  if(!spanEl||!cardsEl) return;
+  document.querySelectorAll("#home-stat-range button").forEach(function(b){
+    b.className="mini ghost"+(b.dataset.r===homeRange?" on":"");
+  });
+  var rc=rangeCards(homeRange);
+  spanEl.textContent=rc.span;
+  cardsEl.innerHTML=rc.html;
+}
+function stat(n,l,cls){
+  return '<div class="stat"><div class="n '+(cls||"")+'">'+n+'</div><div class="l">'+esc(l)+'</div></div>';
+}
+/* 今日执行列表：截止今天或逾期在前，其余按创建时间 */
+function renderToday(){
+  var ul=document.getElementById("today-list");
+  var items=state.tasks.filter(function(t){return !t.done})
+    .sort(function(a,b){
+      var da=a.due?ddays(a.due):99, db=b.due?ddays(b.due):99;
+      if(da!==db) return da-db;
+      return (b.created||"").localeCompare(a.created||"");
+    }).slice(0,8);
+  if(!items.length){ul.innerHTML='<div class="empty">暂无需要完成的任务 🎉</div>';return}
+  ul.innerHTML=items.map(function(t){
+    var d=ddays(t.due), badge="";
+    if(t.due){
+      if(d<0) badge='<span class="badge soon">逾期 '+(-d)+' 天</span>';
+      else if(d===0) badge='<span class="badge soon">今天到期</span>';
+      else badge='<span class="badge info">剩 '+d+' 天</span>';
+    }
+    return '<li><input type="checkbox" class="chk" onchange="toggleTask(\''+t.id+'\')">'+
+      '<div class="txt">'+esc(t.text)+'</div>'+badge+'</li>';
+  }).join("");
+}
+
+/* ================= 项目任务 ================= */
+function prioBadge(p){
+  if(p==="高") return '<span class="badge p-hi">高优先</span>';
+  if(p==="中") return '<span class="badge p-mid">中</span>';
+  if(p==="低") return '<span class="badge p-low">低</span>';
+  return "";
+}
+function prioRank(p){ return p==="高"?0:(p==="中"?1:(p==="低"?2:3)); }
+function renderTasks(){
+  var done=state.tasks.filter(function(t){return t.done}).length;
+  var open=state.tasks.length-done;
+  var overdue=state.tasks.filter(function(t){return !t.done&&t.due&&ddays(t.due)<0}).length;
+  document.getElementById("task-stats").innerHTML=
+    stat(open,"待办")+stat(done,"已完成")+(overdue?stat(overdue,"已过期","warn"):"");
+  var ul=document.getElementById("task-list");
+  var items=state.tasks.slice().sort(function(a,b){
+    if(a.done!==b.done) return a.done?1:-1;
+    if(!a.done&&!b.done&&prioRank(a.prio)!==prioRank(b.prio)) return prioRank(a.prio)-prioRank(b.prio);
+    return (b.created||"").localeCompare(a.created||"");
+  });
+  if(!items.length){ul.innerHTML='<div class="empty">还没有任务，加一条吧</div>';return}
+  ul.innerHTML=items.map(function(t){
+    var d=ddays(t.due), badge=prioBadge(t.prio);
+    if(t.due){
+      if(t.done) badge+='<span class="badge">'+esc(t.due)+'</span>';
+      else if(d<0) badge+='<span class="badge soon">逾期 '+(-d)+' 天</span>';
+      else if(d===0) badge+='<span class="badge soon">今天到期</span>';
+      else badge+='<span class="badge '+(d<=3?"soon":"info")+'">剩 '+d+' 天</span>';
+    }
+    return '<li class="'+(t.done?"done":"")+'">'+
+      '<input type="checkbox" class="chk" '+(t.done?"checked":"")+' onchange="toggleTask(\''+t.id+'\')">'+
+      '<div class="txt">'+esc(t.text)+(t.due?'<div class="meta">截止 '+esc(t.due)+'</div>':'')+'</div>'+badge+
+      '<button class="del" onclick="delTask(\''+t.id+'\')" title="删除">×</button></li>';
+  }).join("");
+}
+function toggleTask(id){
+  state.tasks.forEach(function(t){
+    if(t.id===id){
+      t.done=!t.done;
+      t.completed_at=t.done?new Date().toISOString():"";
+    }
+  });
+  renderTasks(); renderHome(); saveData();
+}
+function delTask(id){
+  state.tasks=state.tasks.filter(function(t){return t.id!==id});
+  renderTasks(); renderHome(); saveData();
+}
+function addTask(text,due,prio){
+  state.tasks.push({id:uid(),text:text,due:due||"",done:false,prio:prio||"",created:new Date().toISOString(),completed_at:""});
+  renderTasks(); renderHome(); saveData();
+}
+
+/* ================= 投稿管理 ================= */
+function renderConf(){
+  var wrap=document.getElementById("conf-wrap");
+  document.getElementById("conf-updated").textContent=
+    confCache.updated?("数据更新于 "+confCache.updated+" · 来源 "+(confCache.source||"ccfddl")):"";
+  var list=confCache.conferences||[];
+  if(!list.length){wrap.innerHTML='<div class="empty">暂无会议数据</div>';return}
+  wrap.innerHTML=list.map(function(c){
+    var rows="";
+    [["摘要截止",c.abstract_deadline],["投稿截止",c.deadline]].forEach(function(p){
+      if(!p[1]) return;
+      var n=ddays(p[1]), badge="";
+      if(n>0) badge='<span class="badge '+(n<=21?"soon":"info")+'">D-'+n+'</span>';
+      else if(n===0) badge='<span class="badge soon">今天！</span>';
+      else badge='<span class="badge">已过</span>';
+      rows+='<div class="row"><span>'+p[0]+'</span><span>'+esc(p[1])+' '+badge+'</span></div>';
+    });
+    if(c.date) rows+='<div class="row"><span>会议时间</span><span>'+esc(c.date)+'</span></div>';
+    if(c.place) rows+='<div class="row"><span>开会地点</span><span>'+esc(c.place)+'</span></div>';
+    if(c.timezone) rows+='<div class="row"><span>截止时区</span><span>'+esc(c.timezone)+'</span></div>';
+    return '<div class="conf"><div class="top"><span class="abbr">'+esc(c.abbr)+' '+esc(c.year||"")+'</span>'+
+      (c.rank?'<span class="badge info">'+esc(c.rank)+'</span>':"")+'</div>'+
+      '<div class="full">'+esc(c.full||"")+'</div>'+rows+
+      (c.link?'<div style="margin-top:8px"><a href="'+esc(c.link)+'" target="_blank" rel="noopener">官网 ↗</a></div>':"")+
+      '</div>';
+  }).join("");
+}
+function renderTargets(){
+  var ul=document.getElementById("target-list");
+  var items=state.targets.filter(function(g){return !g.archived})
+    .sort(function(a,b){return (a.deadline||"9999").localeCompare(b.deadline||"9999")});
+  if(!items.length){ul.innerHTML='<div class="empty">还没有投稿目标，加一个（如 ICLR 2027）</div>';return}
+  ul.innerHTML=items.map(function(g){
+    var d=ddays(g.deadline), badge="";
+    if(g.deadline){
+      if(d>0) badge='<span class="badge '+(d<=21?"soon":"info")+'">D-'+d+'</span>';
+      else if(d===0) badge='<span class="badge soon">今天截稿！</span>';
+      else badge='<span class="badge">已截止 '+(-d)+' 天</span>';
+    }
+    return '<li><div class="txt">'+esc(g.name)+
+      (g.note?'<div class="meta">'+esc(g.note)+'</div>':'')+
+      (g.deadline?'<div class="meta">截止 '+esc(g.deadline)+'</div>':'')+'</div>'+badge+
+      '<button class="del" onclick="delTarget(\''+g.id+'\')" title="删除">×</button></li>';
+  }).join("");
+}
+function delTarget(id){
+  state.targets=state.targets.filter(function(g){return g.id!==id});
+  renderTargets(); renderHome(); saveData();
+}
+
+/* ================= 当前问题 ================= */
+function renderProblems(){
+  var ul=document.getElementById("problem-list");
+  var items=state.problems.slice().sort(function(a,b){
+    if(!!a.open!==!!b.open) return a.open?-1:1;
+    return (b.created||"").localeCompare(a.created||"");
+  });
+  if(!items.length){ul.innerHTML='<div class="empty">没有未解决的问题 🎉</div>';return}
+  ul.innerHTML=items.map(function(p){
+    return '<li class="'+(p.open?"":"done")+'">'+
+      '<input type="checkbox" class="chk" '+(!p.open?"checked":"")+
+        ' onchange="toggleProblem(\''+p.id+'\')" title="'+(p.open?"标记已解决":"重新打开")+'">'+
+      '<div class="txt">'+esc(p.title)+
+        (p.detail?'<div class="meta">'+esc(p.detail)+'</div>':'')+
+        '<div class="meta">'+esc((p.created||"").slice(0,10))+(p.open?"":" · 已解决")+'</div></div>'+
+      '<button class="del" onclick="delProblem(\''+p.id+'\')" title="删除">×</button></li>';
+  }).join("");
+}
+function toggleProblem(id){
+  state.problems.forEach(function(p){if(p.id===id)p.open=!p.open});
+  renderProblems(); saveData();
+}
+function delProblem(id){
+  state.problems=state.problems.filter(function(p){return p.id!==id});
+  renderProblems(); saveData();
+}
+
+/* ================= 推送数据（表格/图片，只读） ================= */
+var tablesCache={updated:null,tables:[]};
+var artCache={updated:null,artifacts:[]};
+function loadPushed(cb){
+  var n=0; function done(){ if(++n===2&&cb) cb(); }
+  fetch("/api/tables",{cache:"no-store"}).then(function(r){return r.json()})
+    .then(function(d){tablesCache=d||{updated:null,tables:[]};done()}).catch(function(){done()});
+  fetch("/api/artifacts",{cache:"no-store"}).then(function(r){return r.json()})
+    .then(function(d){artCache=d||{updated:null,artifacts:[]};done()}).catch(function(){done()});
+}
+function belongsTo(item,p){ return item && (item.topic===p.name||item.topic===p.id); }
+function tableHtml(t){
+  var cols=t.columns||[];
+  var hasGroup=cols.some(function(c){return c.group});
+  var h='<div class="card tcard"><div class="tt">'+esc(t.title||t.id||"表格")+'</div>';
+  if(t.note) h+='<div class="tn">'+esc(t.note)+'</div>';
+  h+='<div class="miniscroll"><table>';
+  if(hasGroup){ h+="<tr>"; var last=null;
+    cols.forEach(function(c,i){
+      var g=c.group||"";
+      h+='<th class="ghead">'+((g&&g!==last)?esc(g):"")+'</th>'; last=g;
+    });
+    h+="</tr>";
+  }
+  h+="<tr>"+cols.map(function(c){return "<th>"+esc(c.label||c.key)+"</th>"}).join("")+"</tr>";
+  (t.rows||[]).forEach(function(r){
+    h+="<tr>"+cols.map(function(c,i){
+      var v=(i===0&&r.label!=null)?r.label:(r.cells?r.cells[c.key]:r[c.key]);
+      if(v==null||v==="") v="—";
+      return "<td>"+esc(v)+"</td>";
+    }).join("")+"</tr>";
+  });
+  h+="</table></div></div>";
+  return h;
+}
+
+/* ================= 科研课题 ================= */
+function renderProj(){
+  var open=state.projects.filter(function(p){return p.status==="进行中"}).length;
+  var paused=state.projects.filter(function(p){return p.status==="暂停"}).length;
+  var fin=state.projects.filter(function(p){return p.status==="已完成"}).length;
+  document.getElementById("proj-stats").innerHTML=
+    stat(open,"进行中")+stat(paused,"暂停")+stat(fin,"已完成");
+  var ul=document.getElementById("proj-list");
+  var items=state.projects.slice().sort(function(a,b){
+    if((a.status==="进行中")!==(b.status==="进行中")) return a.status==="进行中"?-1:1;
+    return (b.created||"").localeCompare(a.created||"");
+  });
+  if(!items.length){ul.innerHTML='<div class="empty">还没有登记论文，加第一篇吧</div>';}
+  else{
+    ul.innerHTML=items.map(function(p){
+      var c=topicCounts(p);
+      var cls=p.status==="进行中"?"info":(p.status==="暂停"?"":"ok");
+      return '<li class="topic"><div class="txt" onclick="location.hash=\'#topic:'+p.id+'\'" title="点开查看表格与图片">'+
+        '<b>'+esc(p.name)+'</b>'+
+        (c.t||c.a?'<span class="badge" style="margin-left:8px">'+c.t+' 表格 · '+c.a+' 图</span>':'')+
+        (p.note?'<div class="meta">'+esc(p.note)+'</div>':'')+
+        '<div class="meta">登记于 '+esc((p.created||"").slice(0,10))+'</div></div>'+
+        '<select onchange="setProjStatus(\''+p.id+'\',this.value)" style="flex:none;max-width:110px">'+
+        ["进行中","暂停","已完成"].map(function(s){return '<option '+(p.status===s?"selected":"")+'>'+s+'</option>'}).join("")+
+        '</select>'+
+        '<button class="del" onclick="delProj(\''+p.id+'\')" title="删除">×</button></li>';
+    }).join("");
+  }
+  /* 未归类表格 */
+  var tagged={};
+  state.projects.forEach(function(p){tagged[p.name]=1;tagged[p.id]=1;});
+  var loose=(tablesCache.tables||[]).filter(function(t){return !t.topic||!tagged[t.topic]});
+  var card=document.getElementById("proj-untagged-card");
+  card.style.display=loose.length?"block":"none";
+  document.getElementById("proj-untagged").innerHTML=loose.map(function(t){return tableHtml(t)}).join("");
+}
+function topicCounts(p){
+  var t=0,a=0;
+  (tablesCache.tables||[]).forEach(function(x){ if(belongsTo(x,p)) t++; });
+  (artCache.artifacts||[]).forEach(function(x){ if(belongsTo(x,p)) a++; });
+  return {t:t,a:a};
+}
+var pdExp="全部", pdP=null;
+function expsOf(p){
+  var out=[], seen={};
+  (tablesCache.tables||[]).forEach(function(t){ if(belongsTo(t,p)&&t.exp&&!seen[t.exp]){seen[t.exp]=1;out.push(t.exp);} });
+  (artCache.artifacts||[]).forEach(function(a){ if(belongsTo(a,p)&&a.exp&&!seen[a.exp]){seen[a.exp]=1;out.push(a.exp);} });
+  return out;
+}
+function setPdExp(e){
+  pdExp=e;
+  document.querySelectorAll('#pd-tabs a').forEach(function(a){ a.className=(a.dataset.e===e)?"on":""; });
+  if(pdP) renderDetailBody(pdP);
+}
+function renderTopicDetail(id){
+  var p=null;
+  state.projects.forEach(function(x){ if(x.id===id) p=x; });
+  var nameEl=document.getElementById("pd-name"), metaEl=document.getElementById("pd-meta");
+  var tabs=document.getElementById("pd-tabs");
+  var tbox=document.getElementById("pd-tables"), abox=document.getElementById("pd-artifacts");
+  if(!p){
+    nameEl.textContent="课题不存在"; metaEl.textContent="";
+    tabs.style.display="none"; tbox.innerHTML=""; abox.innerHTML="";
+    return;
+  }
+  pdP=p;
+  nameEl.textContent=p.name;
+  metaEl.textContent=[p.status,p.note,"登记于 "+(p.created||"").slice(0,10)].filter(Boolean).join(" · ");
+  tbox.innerHTML='<div class="empty">加载中…</div>';
+  abox.innerHTML="";
+  loadPushed(function(){
+    var exps=expsOf(p);
+    if(!exps.length){
+      tabs.style.display="none"; pdExp="全部";
+    }else{
+      tabs.style.display="flex"; pdExp="全部";
+      tabs.innerHTML=["全部"].concat(exps).map(function(e){
+        return '<a data-e="'+esc(e)+'" class="'+(e==="全部"?"on":"")+'" onclick="setPdExp(this.dataset.e)">'+esc(e)+'</a>';
+      }).join("");
+    }
+    renderDetailBody(p);
+  });
+}
+function renderDetailBody(p){
+  var tbox=document.getElementById("pd-tables"), abox=document.getElementById("pd-artifacts");
+  var mine=(tablesCache.tables||[]).filter(function(t){return belongsTo(t,p)&&(pdExp==="全部"||t.exp===pdExp)});
+  tbox.innerHTML=mine.length?mine.map(function(t){return tableHtml(t)}).join("")
+    :'<div class="empty">'+(pdExp==="全部"?"该课题":"「"+esc(pdExp)+"」")+'还没有表格。推送 tables.json 时给表加 "topic":"'+esc(p.name)+'"'+(pdExp==="全部"?"":" 和 exp:"+esc(pdExp))+' 即归入此处。</div>';
+  var arts=(artCache.artifacts||[]).filter(function(x){return belongsTo(x,p)&&(pdExp==="全部"||x.exp===pdExp)});
+  abox.innerHTML=arts.length?arts.map(function(x){
+    return '<figure><img loading="lazy" src="/files/'+encodeURIComponent(x.file||"")+'" alt="'+esc(x.title||x.file||"")+'">'+
+      '<figcaption>'+esc(x.title||x.file||"")+(x.note?' · '+esc(x.note):'')+'</figcaption></figure>';
+  }).join("")
+    :'<div class="empty" style="grid-column:1/-1">'+(pdExp==="全部"?"该课题":"「"+esc(pdExp)+"」")+'还没有图片。工作站用 scripts/push_artifacts.py --topic "'+esc(p.name)+'"'+(pdExp==="全部"?"":" --exp '"+esc(pdExp)+"'")+' 推送后显示在这里。</div>';
+}
+function renderRproj(){
+  var open=state.rprojects.filter(function(p){return p.status==="进行中"}).length;
+  var paused=state.rprojects.filter(function(p){return p.status==="暂停"}).length;
+  var fin=state.rprojects.filter(function(p){return p.status==="已完成"}).length;
+  document.getElementById("rproj-stats").innerHTML=
+    stat(open,"进行中")+stat(paused,"暂停")+stat(fin,"已完成");
+  var ul=document.getElementById("rproj-list");
+  var items=state.rprojects.slice().sort(function(a,b){
+    if((a.status==="进行中")!==(b.status==="进行中")) return a.status==="进行中"?-1:1;
+    return (b.created||"").localeCompare(a.created||"");
+  });
+  if(!items.length){ul.innerHTML='<div class="empty">还没有登记科研项目</div>';return}
+  ul.innerHTML=items.map(function(p){
+    var cls=p.status==="进行中"?"info":(p.status==="暂停"?"":"ok");
+    return '<li><div class="txt"><b>'+esc(p.name)+'</b>'+
+      (p.note?'<div class="meta">'+esc(p.note)+'</div>':'')+
+      '<div class="meta">登记于 '+esc((p.created||"").slice(0,10))+'</div></div>'+
+      '<select onchange="setRprojStatus(\''+p.id+'\',this.value)" style="flex:none;max-width:110px">'+
+      ["进行中","暂停","已完成"].map(function(s2){return '<option '+(p.status===s2?"selected":"")+'>'+s2+'</option>'}).join("")+
+      '</select>'+
+      '<button class="del" onclick="delRproj(\''+p.id+'\')" title="删除">×</button></li>';
+  }).join("");
+}
+function setRprojStatus(id,st){
+  state.rprojects.forEach(function(p){if(p.id===id)p.status=st});
+  renderRproj(); saveData();
+}
+function delRproj(id){
+  state.rprojects=state.rprojects.filter(function(p){return p.id!==id});
+  renderRproj(); saveData();
+}
+function setProjStatus(id,st){
+  state.projects.forEach(function(p){if(p.id===id)p.status=st});
+  renderProj(); saveData();
+}
+function delProj(id){
+  state.projects=state.projects.filter(function(p){return p.id!==id});
+  renderProj(); saveData();
+}
+
+/* ================= 每日复盘 ================= */
+function renderRetro(){
+  var ul=document.getElementById("retro-list");
+  var items=state.retros.slice().sort(function(a,b){return (b.date||"").localeCompare(a.date||"")});
+  if(!items.length){ul.innerHTML='<div class="empty">还没有复盘记录，今天写第一条吧</div>';return}
+  ul.innerHTML=items.map(function(r){
+    var lines=[];
+    if(r.done) lines.push("✅ "+r.done);
+    if(r.block) lines.push("🧱 "+r.block);
+    if(r.next) lines.push("➡️ "+r.next);
+    var todayCls=(r.date===today())?' <span class="badge info">今天</span>':"";
+    return '<li><div class="txt"><b>'+esc(r.date)+'</b>'+todayCls+
+      '<div class="meta" style="white-space:pre-wrap">'+lines.map(esc).join("\n")+'</div></div>'+
+      '<button class="del" onclick="delRetro(\''+r.date+'\')" title="删除">×</button></li>';
+  }).join("");
+}
+function delRetro(date){
+  state.retros=state.retros.filter(function(r){return r.date!==date});
+  renderRetro(); saveData();
+}
+
+/* ================= 数据统计 ================= */
+var statRange="day";
+function rangeFor(kind){
+  var t=today(), y=t.slice(0,4);
+  if(kind==="day") return [t,t];
+  var d=cstShift(new Date());
+  if(kind==="week"){
+    var dow=(d.getDay()+6)%7;
+    var s=new Date(d); s.setDate(d.getDate()-dow);
+    var e=new Date(s); e.setDate(s.getDate()+6);
+    return [s.toISOString().slice(0,10), e.toISOString().slice(0,10)];
+  }
+  if(kind==="month") return [t.slice(0,8)+"01", t.slice(0,8)+"31"];
+  return [y+"-01-01", y+"-12-31"];
+}
+function inRange(dstr,s,e){ var d=String(dstr||"").slice(0,10); return (!s||d>=s)&&(!e||d<=e); }
+function workMinIn(s,e){
+  var min=0, open=null;
+  state.checkins.slice().sort(function(a,b){return a.ts.localeCompare(b.ts)}).forEach(function(c){
+    var d=cstShift(new Date(c.ts)).toISOString().slice(0,10);
+    if(c.type==="in"){ if(inRange(d,s,e)) open=new Date(c.ts); else open=null; }
+    else if(c.type==="out"&&open){ min+=(new Date(c.ts)-open)/60000; open=null; }
+  });
+  return min;
+}
+function dayMin(dateStr){
+  return workMinIn(dateStr,dateStr);
+}
+function renderStats(){
+  var s,e;
+  var r=rangeFor(statRange); s=r[0]; e=r[1];
+  var names={day:"今日",week:"本周",month:"本月",year:"本年"};
+  document.getElementById("stat-span").textContent=(s===e?s:s+" ~ "+e);
+  document.querySelectorAll("#stat-range button").forEach(function(b){
+    b.className="mini ghost"+(b.dataset.r===statRange?" on":"");
+  });
+  var min=workMinIn(s,e);
+  var outs=state.checkins.filter(function(c){return c.type==="out"&&inRange(cstShift(new Date(c.ts)).toISOString().slice(0,10),s,e)}).length;
+  var leaves=state.checkins.filter(function(c){return c.type==="leave"&&inRange(cstShift(new Date(c.ts)).toISOString().slice(0,10),s,e)}).length;
+  var doneN=state.tasks.filter(function(t){return t.done&&t.completed_at&&inRange(cstShift(new Date(t.completed_at)).toISOString().slice(0,10),s,e)}).length;
+  var addN=state.tasks.filter(function(t){return inRange((t.created||"").slice(0,10),s,e)}).length;
+  var openP=state.problems.filter(function(p){return p.open}).length;
+  document.getElementById("stat-cards").innerHTML=
+    stat(fmtDur(min),"工作时长")+
+    stat(outs,"结束打卡次数")+
+    stat(leaves,"请假次数")+
+    stat(doneN,"完成任务")+
+    stat(addN,"新增任务")+
+    stat(openP,"当前未解决问题",openP?"warn":"");
+  /* 柱状图 */
+  var chart=document.getElementById("chart"), title=document.getElementById("chart-title");
+  var buckets=[];
+  if(statRange==="day"){
+    title.textContent="今日暂无趋势图，切到本周/本月/本年查看每日工时";
+    chart.innerHTML=""; return;
+  }
+  var labelMode=(statRange==="week")?"day":(statRange==="month"?"day":"month");
+  title.textContent=labelMode==="day"?"每日工作时长":"每月工作时长";
+  if(statRange==="week"){
+    var d0=cstShift(new Date()); var dow=(d0.getDay()+6)%7;
+    for(var i=0;i<7;i++){ var x=new Date(d0); x.setDate(d0.getDate()-dow+i);
+      buckets.push({key:x.toISOString().slice(0,10),label:"周"+"一二三四五六日"[i]}); }
+  }else if(statRange==="month"){
+    for(var i=1;i<=31;i++) buckets.push({key:s.slice(0,8)+("0"+i).slice(-2),label:String(i)});
+  }else{
+    var yr=s.slice(0,4);
+    for(var i=1;i<=12;i++) buckets.push({key:yr+"-"+("0"+i).slice(-2),label:i+"月"});
+  }
+  var vals=buckets.map(function(b){ return b.key<=today()? (labelMode==="day"?dayMin(b.key):monthMin(b.key)) : -1; });
+  var max=Math.max.apply(null,vals.map(function(v){return v<0?0:v}).concat([1]));
+  chart.innerHTML=buckets.map(function(b,i){
+    var v=vals[i];
+    if(v<0) return '<div style="flex:1"></div>';
+    var h=Math.round(v/max*100);
+    return '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:3px" title="'+b.key+'：'+fmtDur(v)+'">'+
+      '<div style="font-size:9px;color:var(--faint)">'+(v>0?fmtDur(v):"")+'</div>'+
+      '<div style="width:70%;'+(v>0?'height:'+Math.max(h,3)+'%;background:linear-gradient(180deg,#d9b97e,#8a6d3b);border-radius:4px 4px 0 0':'height:2px;background:var(--line)')+'"></div>'+
+      '<div style="font-size:9px;color:var(--faint)">'+b.label+'</div></div>';
+  }).join("");
+}
+function monthMin(ym){
+  var s=ym+"-01", e=ym+"-31";
+  return workMinIn(s,e);
+}
+document.querySelectorAll("#stat-range button").forEach(function(b){
+  b.addEventListener("click",function(){ statRange=b.dataset.r; renderStats(); });
+});
+
+/* ================= 路由 ================= */
+var VIEWS=["home","tasks","proj","rproj","conf","problems","retro","stats"];
+function showSection(v){
+  VIEWS.concat(["projdet"]).forEach(function(name){
+    var el=document.getElementById("v-"+name);
+    if(el) el.className=(name===v)?"on":"";
+    var tab=document.querySelector('#side nav a[data-v="'+name+'"]');
+    if(tab) tab.className=(name===v)?"on":"";
+  });
+}
+function route(){
+  var v=(location.hash||"#home").slice(1);
+  if(v==="targets") v="conf";
+  if(v==="tables") v="proj";
+  if(v.indexOf("topic:")===0){
+    showSection("projdet");
+    renderTopicDetail(v.slice(6));
+    return;
+  }
+  if(VIEWS.indexOf(v)<0) v="home";
+  showSection(v);
+  var renders={conf:renderConf,home:renderHome,tasks:renderTasks,proj:renderProj,rproj:renderRproj,retro:renderRetro,stats:renderStats,problems:renderProblems};
+  if(renders[v]){ try{ renders[v](); }catch(err){ console.error(v+" 渲染失败", err); } }
+}
+window.addEventListener("hashchange",route);
+
+/* ================= 表单与按钮 ================= */
+document.getElementById("btn-in").addEventListener("click",function(){addCheckin("in")});
+document.getElementById("btn-out").addEventListener("click",function(){addCheckin("out")});
+document.getElementById("btn-leave").addEventListener("click",function(){addCheckin("leave")});
+document.querySelectorAll("#home-stat-range button").forEach(function(b){
+  b.addEventListener("click",function(){ homeRange=b.dataset.r; renderHomeStats(); });
+});
+document.getElementById("fix-close").addEventListener("click",function(){
+  if(openSegment()) addCheckin("out");
+});
+document.getElementById("fix-clear").addEventListener("click",function(){
+  state.checkins=state.checkins.filter(function(c){return !isToday(c.ts)});
+  renderHome(); saveData();
+});
+document.getElementById("f-today").addEventListener("submit",function(e){
+  e.preventDefault();
+  var el=document.getElementById("t2-text"), v=el.value.trim();
+  if(!v) return;
+  addTask(v,today());
+  el.value="";
+});
+document.getElementById("f-task").addEventListener("submit",function(e){
+  e.preventDefault();
+  var el=document.getElementById("t-text"), v=el.value.trim();
+  if(!v) return;
+  addTask(v,document.getElementById("t-due").value,document.getElementById("t-prio").value);
+  el.value=""; document.getElementById("t-due").value=""; document.getElementById("t-prio").value="";
+});
+document.getElementById("f-target").addEventListener("submit",function(e){
+  e.preventDefault();
+  var el=document.getElementById("g-name"), v=el.value.trim();
+  if(!v) return;
+  state.targets.push({id:uid(),name:v,deadline:document.getElementById("g-dl").value||"",
+    note:document.getElementById("g-note").value.trim(),archived:false});
+  el.value=""; document.getElementById("g-dl").value=""; document.getElementById("g-note").value="";
+  renderTargets(); renderHome(); saveData();
+});
+document.getElementById("f-problem").addEventListener("submit",function(e){
+  e.preventDefault();
+  var el=document.getElementById("p-title"), v=el.value.trim();
+  if(!v) return;
+  state.problems.push({id:uid(),title:v,detail:document.getElementById("p-detail").value.trim(),
+    open:true,created:new Date().toISOString()});
+  el.value=""; document.getElementById("p-detail").value="";
+  renderProblems(); saveData();
+});
+
+document.getElementById("f-proj").addEventListener("submit",function(e){
+  e.preventDefault();
+  var el=document.getElementById("pj-name"), v=el.value.trim();
+  if(!v) return;
+  state.projects.push({id:uid(),name:v,status:document.getElementById("pj-status").value,
+    note:document.getElementById("pj-note").value.trim(),created:new Date().toISOString()});
+  el.value=""; document.getElementById("pj-note").value="";
+  renderProj(); saveData();
+});
+document.getElementById("f-rproj").addEventListener("submit",function(e){
+  e.preventDefault();
+  var el=document.getElementById("rj-name"), v=el.value.trim();
+  if(!v) return;
+  state.rprojects.push({id:uid(),name:v,status:document.getElementById("rj-status").value,
+    note:document.getElementById("rj-note").value.trim(),created:new Date().toISOString()});
+  el.value=""; document.getElementById("rj-note").value="";
+  renderRproj(); saveData();
+});
+document.getElementById("f-retro").addEventListener("submit",function(e){
+  e.preventDefault();
+  var date=document.getElementById("r-date").value||today();
+  var done=document.getElementById("r-done").value.trim();
+  var block=document.getElementById("r-block").value.trim();
+  var next=document.getElementById("r-next").value.trim();
+  if(!done&&!block&&!next) return;
+  state.retros=state.retros.filter(function(r){return r.date!==date});
+  state.retros.push({id:uid(),date:date,done:done,block:block,next:next,created:new Date().toISOString()});
+  document.getElementById("r-done").value=""; document.getElementById("r-block").value=""; document.getElementById("r-next").value="";
+  renderRetro(); saveData();
+});
+
+/* ================= 启动 ================= */
+function loadConf(cb){
+  fetch("/api/conferences",{cache:"no-store"}).then(function(r){return r.json()}).then(function(d){
+    confCache=d||{conferences:[]};
+    if(cb) cb();
+  }).catch(function(){ if(cb) cb(); });
+}
+tick();
+document.getElementById("r-date").value=today();
+route();
+loadData();
+loadConf(function(){ renderConf(); renderHome(); });
+loadPushed(function(){ route(); });
+</script>
+</body>
+</html>
