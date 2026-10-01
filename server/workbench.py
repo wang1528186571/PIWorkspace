@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """科研工作台 Research Workbench — 纯标准库轻量服务端 (Python 3.8+).
 
+Design inspired by ny12031/research_system (https://github.com/ny12031/research_system, MIT).
+Independent Web reimplementation; no code copied.
+
 模块：每日任务 / 投稿目标 / 当前问题 / 打卡记录 / 论文表格 / 会议日历。
 前三者+打卡在网页上直接编辑，整体存 data/state.json；
 论文表格(conferences)为只读，由推送/放置 data/tables.json、data/conferences.json 提供。

@@ -3,10 +3,7 @@
 纯 Python 标准库的轻量科研管理单页应用，零第三方依赖，一台小服务器即可部署，
 手机 / 平板 / 电脑浏览器多端访问。
 
-> **设计参考致谢**：本项目的功能设计与界面布局大量参考了
-> [ny12031/research_system](https://github.com/ny12031/research_system)（Tauri 桌面版科研工作台），
-> 在其思路上做了 Web 化重写与按需取舍，特此致谢。采纳了其中打卡记录、主题统计（每日/每周/每月/每年）、
-> 每日复盘、任务优先级、投稿管理等设计；未采纳专注计时器、心灵关怀、健康管理、导师管理等模块。
+> ⭐ **本项目的设计灵感与功能架构来自开源项目 [ny12031/research_system](https://github.com/ny12031/research_system)**（Tauri 桌面版科研工作台，MIT License）。PIWorkspace 是其设计思路的独立 Web 重写实现，未复制其代码。详细参考范围见文末 [致谢与参考](#致谢与参考credits)。
 
 ## 功能特性
 
@@ -90,6 +87,27 @@ python3 scripts/push_artifacts.py --topic "论文题目" --exp "可视化效果"
   ]
 }
 ```
+
+## 致谢与参考（Credits）
+
+本项目的**功能设计、信息架构与界面布局**参考并致敬以下开源项目：
+
+### [ny12031/research_system](https://github.com/ny12031/research_system)
+
+- **项目**：科研工作台（面向科研工作者的本地一体化学术管理桌面工具，Tauri 2 + Rust + JavaScript）
+- **协议**：MIT License
+- **参考范围**：
+  - 整体信息架构：今日执行舱 / 项目任务 / 投稿管理 / 打卡记录 / 每日复盘 / 数据统计
+  - 打卡记录交互（多次开始/结束工作、请假记录、工时统计）
+  - 主题统计的「每日 / 每周 / 每月 / 本年」切换设计
+  - 左侧分组导航 + 卡片式布局的界面风格
+- **本项目的差异**：Web 化重写（纯 Python 标准库 + 单页 HTML，多端浏览器访问）；按自身需求
+  未实现专注计时器、心灵关怀、健康管理、导师管理、成就系统等模块；新增学术论文归档
+  （表格 / 图片按实验分组展示）、会议日历（ccfddl 数据）、数据自动备份到 GitHub 等
+
+### [ccfddl/ccf-deadlines](https://github.com/ccfddl/ccf-deadlines)
+
+- 会议截止日期数据来源（CVPR / ICLR 等），`conferences.json` 由其公开数据整理
 
 ## License
 
