@@ -1,7 +1,6 @@
-# 本地私有配置（服务器地址等），绝不入库
 .env.local
-# 真实数据只存在于部署机上，绝不入库
 data/
+data2/
 __pycache__/
 *.pyc
 .DS_Store

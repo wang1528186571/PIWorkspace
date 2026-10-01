@@ -7,7 +7,7 @@ SERVER="${WORKBENCH_SERVER:-${1:-user@your-server}}"
 DEST=/opt/workbench
 cd "$(dirname "$0")/.."
 rsync -a --delete \
-  --exclude .git --exclude data --exclude __pycache__ --exclude '*.pyc' \
+  --exclude .git --exclude data --exclude data2 --exclude __pycache__ --exclude '*.pyc' \
   ./ "$SERVER:$DEST/"
 ssh "$SERVER" "systemctl restart workbench && sleep 1 && systemctl is-active workbench"
 echo "deployed → http://$SERVER:28488  (服务端口 127.0.0.1:8900)"
