@@ -317,6 +317,30 @@ tr:hover td{background:var(--accent-bg)}
 }
 @media(max-width:440px){main{padding:12px 14px 40px}.card{padding:18px}.topbar{margin-bottom:10px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}#home-stat-cards .stat{padding:8px 10px}#home-stat-cards .n{font-size:21px}#home-stat-cards .l{font-size:10px}#home-stat-range button{padding:6px 11px}.hero-days{font-size:32px}.retro-date{flex-wrap:wrap}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.paper-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 18px}
+.paper-actions .hint{margin-left:auto;font-size:12px;color:var(--dim)}
+.subtabs button{background:none;color:var(--dim);padding:7px 18px}
+.subtabs button.on{background:var(--accent-fill);color:#fff}
+.table-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.table-heading .tt{margin-bottom:4px}
+.table-heading .meta{margin-top:0}
+.table-heading .btnrow{margin:0;flex:none}
+dialog{color:var(--txt);background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px;width:min(900px,calc(100% - 28px));max-height:85vh;overflow:auto;margin:auto;box-shadow:0 24px 80px #0003}
+dialog::backdrop{background:#1119;backdrop-filter:blur(3px)}
+dialog h3{font-size:21px;margin-bottom:20px}
+.editor-fields{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:18px}
+.editor-fields label,.experiment-field{display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--dim)}
+.editor-fields input,.editor-fields select{width:100%}
+.editor-toolbar{display:flex;gap:8px;margin:16px 0}
+.editor-grid{overflow:auto;border:1px solid var(--line);border-radius:10px;max-height:380px}
+.editor-grid table{min-width:100%;width:max-content}
+.editor-grid input{width:140px;background:var(--card);padding:8px;border:1px solid var(--line);border-radius:6px;color:var(--txt);font:inherit}
+.editor-grid th,.editor-grid td{padding:8px;position:static!important}
+.editor-footer{display:flex;gap:10px;justify-content:flex-end;padding-top:20px;margin-top:12px;border-top:1px solid var(--line)}
+.editor-error,#sync.err{color:var(--red);font-size:12px}
+#sync{font-size:12px;color:var(--dim)}
+#experiment-dialog{width:min(430px,calc(100% - 28px))}
+@media(max-width:600px){.editor-fields{grid-template-columns:1fr}dialog{padding:18px}.paper-actions .hint{width:100%;margin-left:0}.table-heading{flex-wrap:wrap}.table-heading .btnrow{margin-left:auto}.editor-grid input{width:115px}}
 </style>
 </head>
 <body>
@@ -350,7 +374,7 @@ tr:hover td{background:var(--accent-bg)}
   <div class="foot">多端同步 · 随时记录</div>
 </aside>
 <main>
-  <div class="topbar"><button type="button" class="ghost" id="theme-toggle" aria-pressed="false"><span id="theme-icon" aria-hidden="true">☾</span><span id="theme-label">深色模式</span></button></div>
+  <div class="topbar"><span id="sync" role="status" aria-live="polite"></span><button type="button" class="ghost" id="theme-toggle" aria-pressed="false"><span id="theme-icon" aria-hidden="true">☾</span><span id="theme-label">深色模式</span></button></div>
   <!-- ============ 今日 ============ -->
   <section id="v-home">
     <div class="home-head">
@@ -521,6 +545,12 @@ tr:hover td{background:var(--accent-bg)}
     <button class="ghost mini" style="margin-bottom:12px" onclick="location.hash='#proj'">← 返回学术论文</button>
     <div class="h1" id="pd-name"></div>
     <div class="hsub" id="pd-meta"></div>
+    <div class="paper-actions">
+      <button type="button" id="pd-add-exp">＋ 新建实验</button>
+      <button type="button" class="ghost" id="pd-rename-exp" disabled>重命名实验</button>
+      <button type="button" class="ghost" id="pd-add-table">＋ 添加表格</button>
+      <span class="hint" id="pd-summary"></span>
+    </div>
     <div class="subtabs" id="pd-tabs" style="display:none"></div>
     <div class="card">
       <h3>实验数据 <span class="hint">按实验标签查看对比结果</span></h3>
@@ -567,6 +597,30 @@ tr:hover td{background:var(--accent-bg)}
   </section>
 
 </main>
+<dialog id="experiment-dialog" aria-labelledby="experiment-heading">
+  <form id="experiment-form">
+    <h3 id="experiment-heading">新建实验</h3>
+    <label class="experiment-field">实验名称<input id="experiment-name" type="text" required maxlength="80" placeholder="如：对比实验、消融实验"></label>
+    <p class="editor-error" id="experiment-error" role="alert"></p>
+    <div class="editor-footer"><button type="button" class="ghost" id="experiment-cancel">取消</button><button type="submit">保存实验</button></div>
+  </form>
+</dialog>
+<dialog id="table-dialog" aria-labelledby="table-heading">
+  <form id="table-form">
+    <h3 id="table-heading">添加表格</h3>
+    <div class="editor-fields">
+      <label>表格名称<input id="table-name" type="text" required maxlength="120" placeholder="如：主要方法对比"></label>
+      <label>所属实验<select id="table-experiment"></select></label>
+    </div>
+    <div id="table-data-editor">
+      <div class="editor-toolbar"><button type="button" class="ghost mini" id="table-add-row">＋ 添加行</button><button type="button" class="ghost mini" id="table-add-column">＋ 添加列</button></div>
+      <div class="editor-grid" id="table-grid"></div>
+    </div>
+    <p class="meta" id="table-source-note"></p>
+    <p class="editor-error" id="table-error" role="alert"></p>
+    <div class="editor-footer"><button type="button" class="ghost" id="table-cancel">取消</button><button type="submit">保存表格</button></div>
+  </form>
+</dialog>
 <script>
 "use strict";
 function updateThemeButton(){
@@ -631,9 +685,12 @@ function loadData(){
   });
 }
 function saveData(){
-  fetch("/api/data",{
+  markSync("保存中…");
+  return fetch("/api/data",{
     method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(state)
-  }).catch(function(){});
+  }).then(function(r){if(!r.ok) throw new Error("保存失败");return r.json();})
+    .then(function(d){if(!d.ok) throw new Error("保存失败");markSync("已保存");return true;})
+    .catch(function(){markSync("保存失败，请重试",true);return false;});
 }
 
 /* ================= 侧栏时钟 ================= */
@@ -921,10 +978,14 @@ function loadPushed(cb){
     .then(function(d){artCache=d||{updated:null,artifacts:[]};done()}).catch(function(){done()});
 }
 function belongsTo(item,p){ return item && (item.topic===p.name||item.topic===p.id); }
-function tableHtml(t){
+function tableHtml(t,entry){
   var cols=t.columns||[];
   var hasGroup=cols.some(function(c){return c.group});
-  var h='<div class="card tcard"><div class="tt">'+esc(t.title||t.id||"表格")+'</div>';
+  var h='<div class="card tcard"><div class="table-heading"><div><div class="tt">'+esc(t.title||t.id||"表格")+'</div>';
+  if(entry) h+='<div class="meta">'+esc(t.exp||"未分组")+' · '+(entry.manual?'手动表格':'工作站同步')+'</div>';
+  h+='</div>';
+  if(entry) h+='<div><button class="ghost mini" data-edit="'+esc(entry.key)+'">编辑表格</button>'+(entry.manual?' <button class="ghost mini" data-remove="'+esc(entry.key)+'">删除</button>':'')+'</div>';
+  h+='</div>';
   if(t.note) h+='<div class="tn">'+esc(t.note)+'</div>';
   h+='<div class="miniscroll"><table>';
   if(hasGroup){ h+="<tr>"; var last=null;
@@ -982,65 +1043,127 @@ function renderProj(){
   card.style.display=loose.length?"block":"none";
   document.getElementById("proj-untagged").innerHTML=loose.map(function(t){return tableHtml(t)}).join("");
 }
-function topicCounts(p){
-  var t=0,a=0;
-  (tablesCache.tables||[]).forEach(function(x){ if(belongsTo(x,p)) t++; });
-  (artCache.artifacts||[]).forEach(function(x){ if(belongsTo(x,p)) a++; });
-  return {t:t,a:a};
+function paperWorkspace(p){
+  return p.workspace||{experiments:[],tables:[],overrides:[],aliases:[]};
 }
-var pdExp="全部", pdP=null;
-function expsOf(p){
-  var out=[], seen={};
-  (tablesCache.tables||[]).forEach(function(t){ if(belongsTo(t,p)&&t.exp&&!seen[t.exp]){seen[t.exp]=1;out.push(t.exp);} });
-  (artCache.artifacts||[]).forEach(function(a){ if(belongsTo(a,p)&&a.exp&&!seen[a.exp]){seen[a.exp]=1;out.push(a.exp);} });
+function displayExp(p,name){
+  var alias=(paperWorkspace(p).aliases||[]).find(function(x){return x.source===name});
+  return alias?alias.name:(name||"");
+}
+function paperTables(p){
+  var w=paperWorkspace(p),out=[];
+  (tablesCache.tables||[]).forEach(function(t,i){
+    if(!belongsTo(t,p))return;
+    var key=JSON.stringify([t.topic,t.id||t.title||('index:'+i),t.exp||'']);
+    var o=(w.overrides||[]).find(function(x){return x.key===key})||{};
+    out.push({key:key,manual:false,table:Object.assign({},t,{title:o.title||t.title||t.id||'表格',exp:o.exp!=null?o.exp:displayExp(p,t.exp)})});
+  });
+  (w.tables||[]).forEach(function(t){out.push({key:t.id,manual:true,table:t})});
   return out;
 }
-function setPdExp(e){
-  pdExp=e;
-  document.querySelectorAll('#pd-tabs a').forEach(function(a){ a.className=(a.dataset.e===e)?"on":""; });
-  if(pdP) renderDetailBody(pdP);
+function topicCounts(p){
+  return {t:paperTables(p).length,a:(artCache.artifacts||[]).filter(function(x){return belongsTo(x,p)}).length};
 }
+var pdExp="全部", pdP=null,experimentOld=null,tableDraft=null;
+function expsOf(p){
+  var out=[];
+  function add(e){if(e&&out.indexOf(e)<0)out.push(e)}
+  (paperWorkspace(p).experiments||[]).forEach(add);
+  paperTables(p).forEach(function(e){add(e.table.exp)});
+  (artCache.artifacts||[]).forEach(function(a){if(belongsTo(a,p))add(displayExp(p,a.exp))});
+  return out;
+}
+function refreshPaper(){
+  if(!pdP)return;
+  var exps=expsOf(pdP),tabs=document.getElementById('pd-tabs');
+  if(pdExp!=='全部'&&exps.indexOf(pdExp)<0)pdExp='全部';
+  tabs.style.display=exps.length?'flex':'none';
+  tabs.innerHTML=['全部'].concat(exps).map(function(e){return '<button type="button" data-e="'+esc(e)+'" class="'+(pdExp===e?'on':'')+'" aria-pressed="'+(pdExp===e)+'">'+esc(e)+'</button>'}).join('');
+  document.getElementById('pd-rename-exp').disabled=pdExp==='全部';
+  var c=topicCounts(pdP);
+  document.getElementById('pd-summary').textContent=exps.length+' 个实验 · '+c.t+' 张表格 · '+c.a+' 张图片';
+  renderDetailBody(pdP);
+}
+function setPdExp(e){pdExp=e;refreshPaper()}
+document.getElementById('pd-tabs').addEventListener('click',function(e){var b=e.target.closest('[data-e]');if(b)setPdExp(b.dataset.e)});
 function renderTopicDetail(id){
-  var p=null;
-  state.projects.forEach(function(x){ if(x.id===id) p=x; });
-  var nameEl=document.getElementById("pd-name"), metaEl=document.getElementById("pd-meta");
-  var tabs=document.getElementById("pd-tabs");
-  var tbox=document.getElementById("pd-tables"), abox=document.getElementById("pd-artifacts");
-  if(!p){
-    nameEl.textContent="课题不存在"; metaEl.textContent="";
-    tabs.style.display="none"; tbox.innerHTML=""; abox.innerHTML="";
-    return;
-  }
-  pdP=p;
-  nameEl.textContent=p.name;
-  metaEl.textContent=[p.status,p.note,"登记于 "+(p.created||"").slice(0,10)].filter(Boolean).join(" · ");
-  tbox.innerHTML='<div class="empty">加载中…</div>';
-  abox.innerHTML="";
-  loadPushed(function(){
-    var exps=expsOf(p);
-    if(!exps.length){
-      tabs.style.display="none"; pdExp="全部";
-    }else{
-      tabs.style.display="flex"; pdExp="全部";
-      tabs.innerHTML=["全部"].concat(exps).map(function(e){
-        return '<a data-e="'+esc(e)+'" class="'+(e==="全部"?"on":"")+'" onclick="setPdExp(this.dataset.e)">'+esc(e)+'</a>';
-      }).join("");
-    }
-    renderDetailBody(p);
-  });
+  var p=state.projects.find(function(x){return x.id===id});pdP=p||null;pdExp='全部';
+  document.getElementById('pd-name').textContent=p?p.name:'论文不存在';
+  document.getElementById('pd-meta').textContent=p?[p.status,p.note,'登记于 '+(p.created||'').slice(0,10)].filter(Boolean).join(' · '):'';
+  ['pd-add-exp','pd-add-table'].forEach(function(id){document.getElementById(id).disabled=!p});
+  if(!p){document.getElementById('pd-tabs').innerHTML='';document.getElementById('pd-tables').innerHTML='';document.getElementById('pd-artifacts').innerHTML='';document.getElementById('pd-summary').textContent='';document.getElementById('pd-rename-exp').disabled=true;return}
+  refreshPaper();loadPushed(function(){if(pdP===p)refreshPaper()});
 }
 function renderDetailBody(p){
-  var tbox=document.getElementById("pd-tables"), abox=document.getElementById("pd-artifacts");
-  var mine=(tablesCache.tables||[]).filter(function(t){return belongsTo(t,p)&&(pdExp==="全部"||t.exp===pdExp)});
-  tbox.innerHTML=mine.length?mine.map(function(t){return tableHtml(t)}).join("")
-    :'<div class="empty">'+(pdExp==="全部"?"这篇论文":"「"+esc(pdExp)+"」")+'还没有实验数据，关联结果后会显示在这里。</div>';
-  var arts=(artCache.artifacts||[]).filter(function(x){return belongsTo(x,p)&&(pdExp==="全部"||x.exp===pdExp)});
-  abox.innerHTML=arts.length?arts.map(function(x){
-    return '<figure><img loading="lazy" src="/files/'+encodeURIComponent(x.file||"")+'" alt="'+esc(x.title||x.file||"")+'">'+
-      '<figcaption>'+esc(x.title||x.file||"")+(x.note?' · '+esc(x.note):'')+'</figcaption></figure>';
-  }).join("")
-    :'<div class="empty" style="grid-column:1/-1">'+(pdExp==="全部"?"这篇论文":"「"+esc(pdExp)+"」")+'还没有研究图片，关联图片后会显示在这里。</div>';
+  var mine=paperTables(p).filter(function(e){return pdExp==='全部'||e.table.exp===pdExp});
+  document.getElementById('pd-tables').innerHTML=mine.length?mine.map(function(e){return tableHtml(e.table,e)}).join(''):'<div class="empty">还没有表格。点击「添加表格」，记录这个实验的结果。</div>';
+  var arts=(artCache.artifacts||[]).filter(function(x){return belongsTo(x,p)&&(pdExp==='全部'||displayExp(p,x.exp)===pdExp)});
+  document.getElementById('pd-artifacts').innerHTML=arts.length?arts.map(function(x){return '<figure><img loading="lazy" src="/files/'+encodeURIComponent(x.file||'')+'" alt="'+esc(x.title||x.file||'')+'"><figcaption>'+esc(x.title||x.file||'')+(x.note?' · '+esc(x.note):'')+'</figcaption></figure>'}).join(''):'<div class="empty" style="grid-column:1/-1">暂无研究图片，推送关联图片后会显示在这里。</div>';
 }
+async function savePaperWorkspace(p,change){
+  var old=p.workspace,w=JSON.parse(JSON.stringify(paperWorkspace(p)));
+  ['experiments','tables','overrides','aliases'].forEach(function(k){if(!w[k])w[k]=[]});
+  change(w);p.workspace=w;
+  if(!await saveData()){p.workspace=old;return false}
+  renderProj();if(pdP===p)refreshPaper();return true;
+}
+function openExperiment(rename){
+  if(!pdP)return;experimentOld=rename?pdExp:null;
+  document.getElementById('experiment-heading').textContent=rename?'重命名实验':'新建实验';
+  document.getElementById('experiment-name').value=experimentOld||'';
+  document.getElementById('experiment-error').textContent='';document.getElementById('experiment-dialog').showModal();
+}
+document.getElementById('pd-add-exp').onclick=function(){openExperiment(false)};
+document.getElementById('pd-rename-exp').onclick=function(){openExperiment(true)};
+document.getElementById('experiment-cancel').onclick=function(){document.getElementById('experiment-dialog').close()};
+document.getElementById('experiment-form').onsubmit=async function(e){
+  e.preventDefault();var p=pdP,name=document.getElementById('experiment-name').value.trim(),error=document.getElementById('experiment-error'),old=experimentOld;
+  if(!name||name==='全部'||(name!==old&&expsOf(p).indexOf(name)>=0)){error.textContent='请使用不重复的实验名称（不能使用「全部」）。';return}
+  var button=e.submitter||this.querySelector('[type=submit]');button.disabled=true;
+  var ok=await savePaperWorkspace(p,function(w){
+    w.experiments=w.experiments.filter(function(x){return x!==old});if(w.experiments.indexOf(name)<0)w.experiments.push(name);
+    if(old){
+      w.tables.forEach(function(t){if(t.exp===old)t.exp=name});w.overrides.forEach(function(t){if(t.exp===old)t.exp=name});
+      w.aliases.forEach(function(a){if(a.name===old)a.name=name});
+      var sources=[];(tablesCache.tables||[]).concat(artCache.artifacts||[]).forEach(function(t){if(belongsTo(t,p)&&displayExp(p,t.exp)===old&&sources.indexOf(t.exp)<0)sources.push(t.exp)});
+      sources.forEach(function(source){var a=w.aliases.find(function(a){return a.source===source});if(a)a.name=name;else w.aliases.push({source:source,name:name})});
+    }
+  });button.disabled=false;
+  if(ok){pdExp=name;refreshPaper();document.getElementById('experiment-dialog').close()}else error.textContent='保存失败，请重试。';
+};
+function openTable(key){
+  if(!pdP)return;var entry=key?paperTables(pdP).find(function(e){return e.key===key}):null,t=entry?entry.table:null;
+  tableDraft={key:entry?entry.key:uid(),manual:entry?entry.manual:true,headers:t?(t.columns||[]).map(function(c){return c.label||c.key}):['方法','指标 A','指标 B'],rows:t?(t.rows||[]).map(function(r){return (t.columns||[]).map(function(c,i){var v=i===0&&r.label!=null?r.label:(r.cells?r.cells[c.key]:r[c.key]);return v==null?'':String(v)})}):[['','',''],['','','']]};
+  document.getElementById('table-heading').textContent=t?'编辑表格':'添加表格';document.getElementById('table-name').value=t?(t.title||''):'';
+  var exps=expsOf(pdP),exp=t?t.exp:(pdExp==='全部'?'':pdExp);if(exp&&exps.indexOf(exp)<0)exps.push(exp);
+  document.getElementById('table-experiment').innerHTML=[''].concat(exps).map(function(x){return '<option value="'+esc(x)+'">'+esc(x||'未分组')+'</option>'}).join('');document.getElementById('table-experiment').value=exp||'';
+  document.getElementById('table-data-editor').hidden=!tableDraft.manual;
+  document.getElementById('table-source-note').textContent=tableDraft.manual?'可编辑表头和数值，按需要添加行、列。':'表格内容由工作站同步；这里可以修改显示名称与所属实验。';
+  document.getElementById('table-error').textContent='';renderTableGrid();document.getElementById('table-dialog').showModal();
+}
+function renderTableGrid(){
+  var d=tableDraft;if(!d)return;
+  document.getElementById('table-grid').innerHTML='<table><thead><tr>'+d.headers.map(function(h,c){return '<th><input aria-label="第 '+(c+1)+' 列名称" data-col="'+c+'" value="'+esc(h)+'"><button type="button" class="ghost mini" data-del-col="'+c+'" aria-label="删除第 '+(c+1)+' 列">×</button></th>'}).join('')+'<th></th></tr></thead><tbody>'+d.rows.map(function(row,r){return '<tr>'+d.headers.map(function(h,c){return '<td><input aria-label="第 '+(r+1)+' 行，第 '+(c+1)+' 列" data-row="'+r+'" data-col="'+c+'" value="'+esc(row[c]||'')+'"></td>'}).join('')+'<td><button type="button" class="ghost mini" data-del-row="'+r+'" aria-label="删除第 '+(r+1)+' 行">×</button></td></tr>'}).join('')+'</tbody></table>';
+}
+document.getElementById('table-grid').addEventListener('input',function(e){var el=e.target;if(el.dataset.col==null)return;if(el.dataset.row!=null)tableDraft.rows[+el.dataset.row][+el.dataset.col]=el.value;else tableDraft.headers[+el.dataset.col]=el.value});
+document.getElementById('table-grid').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;if(b.dataset.delRow!=null&&tableDraft.rows.length>1)tableDraft.rows.splice(+b.dataset.delRow,1);if(b.dataset.delCol!=null&&tableDraft.headers.length>1){var c=+b.dataset.delCol;tableDraft.headers.splice(c,1);tableDraft.rows.forEach(function(r){r.splice(c,1)})}renderTableGrid()});
+document.getElementById('table-add-row').onclick=function(){if(tableDraft.rows.length>=100)return;tableDraft.rows.push(tableDraft.headers.map(function(){return ''}));renderTableGrid()};
+document.getElementById('table-add-column').onclick=function(){if(tableDraft.headers.length>=20)return;tableDraft.headers.push('新指标');tableDraft.rows.forEach(function(r){r.push('')});renderTableGrid()};
+document.getElementById('pd-add-table').onclick=function(){openTable()};
+document.getElementById('table-cancel').onclick=function(){document.getElementById('table-dialog').close()};
+document.getElementById('table-form').onsubmit=async function(e){
+  e.preventDefault();var p=pdP,d=tableDraft,title=document.getElementById('table-name').value.trim(),exp=document.getElementById('table-experiment').value,error=document.getElementById('table-error');
+  if(!title){error.textContent='请填写表格名称。';return}if(d.manual&&d.headers.some(function(h){return !h.trim()})){error.textContent='请填写每列的名称。';return}
+  var button=e.submitter||this.querySelector('[type=submit]');button.disabled=true;
+  var ok=await savePaperWorkspace(p,function(w){
+    if(d.manual){var t={id:d.key,title:title,exp:exp,columns:d.headers.map(function(h,i){return {key:'c'+i,label:h.trim()}}),rows:d.rows.map(function(row){var cells={};row.forEach(function(v,i){cells['c'+i]=v});return {label:row[0],cells:cells}})};var i=w.tables.findIndex(function(x){return x.id===d.key});if(i<0)w.tables.push(t);else w.tables[i]=t}
+    else {var o=w.overrides.find(function(x){return x.key===d.key});if(o){o.title=title;o.exp=exp}else w.overrides.push({key:d.key,title:title,exp:exp})}
+  });button.disabled=false;if(ok){pdExp=exp||'全部';refreshPaper();document.getElementById('table-dialog').close()}else error.textContent='保存失败，请重试。';
+};
+document.getElementById('pd-tables').addEventListener('click',async function(e){
+  var b=e.target.closest('button');if(!b)return;if(b.dataset.edit!=null){openTable(b.dataset.edit);return}
+  if(b.dataset.remove!=null&&confirm('删除这张手动表格？')){b.disabled=true;await savePaperWorkspace(pdP,function(w){w.tables=w.tables.filter(function(t){return t.id!==b.dataset.remove})});b.disabled=false}
+});
 function renderRproj(){
   var open=state.rprojects.filter(function(p){return p.status==="进行中"}).length;
   var paused=state.rprojects.filter(function(p){return p.status==="暂停"}).length;

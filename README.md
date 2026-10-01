@@ -59,6 +59,12 @@ nginx -t && systemctl reload nginx
 | `conferences.json` | 手工维护（只读） | 会议日历，来源 [ccfddl](https://github.com/ccfddl/ccf-deadlines) |
 | `artifacts.json` + `files/` | `push_artifacts.py` | 课题图片，`/files/<名>` 安全服务（防路径穿越） |
 
+论文详情支持新建实验、实验改名和手动表格（名称、分组、表头、数值、增删行列）。
+选择实验标签后可点击“重命名实验”；点击“添加表格”创建表格，已有表格可点击“编辑表格”。
+这些编辑保存在 `state.json` 的 `projects[].workspace` 内，随现有状态同步与备份。
+工作站推送表格的显示名称和实验分组可以在网页修改，结果数值继续由工作站更新；
+显示设置不修改 `tables.json` 或 `artifacts.json`。推送时保持表格 `id` 稳定可保留名称设置。
+
 自动备份：把 `scripts/data_backup.sh` 配上 `systemd timer`（模板在 `deploy/`），
 即可将 `data/*.json` 定时提交推送到你自己的**私有**仓库；也可在
 `server/workbench.py` 保存钩子中触发（生产部署默认带，节流 2 分钟）。
