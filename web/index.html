@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PIWorkspace</title>
+<script>
+try { document.documentElement.dataset.theme = localStorage.getItem('piworkspace-theme') === 'dark' ? 'dark' : 'light'; } catch (e) {}
+</script>
 <style>
 :root{
   --bg:#f4f1e8; --card:#ffffff; --line:#e9e2d2; --line2:#f0ebdf;
@@ -149,29 +152,205 @@ th.ghead{background:#efe9da; color:var(--faint); font-size:12px; letter-spacing:
   main{margin-left:0; padding:8px 14px 60px}
   .grid2{grid-template-columns:1fr}
 }
+/* A 暖白手帐 / C 深色工作台，共用一套组件。 */
+:root{
+  color-scheme:light;
+  --bg:#f7f5ef; --card:#fff; --surface:#fafbf8; --line:#e5e7df; --line2:#edf0e9;
+  --txt:#24312e; --dim:#68766f; --faint:#89938d;
+  --accent:#50685d; --accent-fill:#50685d; --accent-bg:#edf2ee;
+  --orange:#b86e50; --slate:#b86e50; --red:#b65349; --green:#50685d; --blue:#5e7b77; --purple:#867486;
+  --warn-bg:#fbefea; --warn-line:#eed3c8; --info-bg:#edf4f0; --info-line:#d7e4dc;
+  --lv-bg:#f4eff5; --lv-line:#e5dbe6; --shadow:0 4px 20px rgba(45,58,47,.025);
+}
+html[data-theme=dark]{
+  color-scheme:dark;
+  --bg:#151e25; --card:#202d36; --surface:#26343d; --line:#35434d; --line2:#31404a;
+  --txt:#f4f0e8; --dim:#b2bec5; --faint:#8e9da7;
+  --accent:#91cdb0; --accent-fill:#47755f; --accent-bg:#2b423a;
+  --orange:#c37c5c; --slate:#c37c5c; --red:#eba08c; --green:#91cdb0; --blue:#a1c8b7; --purple:#c1a9c8;
+  --warn-bg:#43322d; --warn-line:#665044; --info-bg:#2b423a; --info-line:#3d5b4b;
+  --lv-bg:#3a3340; --lv-line:#514457; --shadow:none;
+}
+body{font-size:15px;line-height:1.65;transition:background-color .15s,color .15s}
+section.on{animation:none}
+button,input,select,textarea{touch-action:manipulation}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+#side{left:16px;top:16px;bottom:16px;width:218px;padding:26px 14px 18px;border-radius:16px;box-shadow:var(--shadow);gap:10px;overflow-y:auto}
+.brand{font:700 23px/1.3 Georgia,"Times New Roman",serif;color:var(--txt);padding:2px 10px 20px;letter-spacing:-.5px}
+.brand span{color:var(--accent)}
+.brand small{font:11px/1.5 -apple-system,"Microsoft YaHei",sans-serif;letter-spacing:1px;margin-top:8px;color:var(--faint)}
+.navg{display:none}
+#side nav a{padding:13px 14px;margin:4px 0;border-radius:10px;font-size:15px;color:var(--dim);gap:13px}
+#side nav a.on{background:var(--accent-bg);color:var(--accent);font-weight:650}
+#side nav a:hover{background:var(--accent-bg)}
+.nav-icon{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#clock{margin: auto 10px 0;padding:14px 0 0;border-top:1px solid var(--line);background:none;border-radius:0;font-size:11px;color:var(--faint)}
+#clock b{font-size:17px;letter-spacing:1px;color:var(--dim)}
+#side .foot{padding:0 10px;font-size:11px}
+main{margin-left:254px;padding:20px 28px 64px;min-width:0}
+.topbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-bottom:14px;min-height:34px}
+#theme-toggle{display:flex;align-items:center;gap:8px;padding:7px 13px;font-size:12px;line-height:1.5}
+#theme-icon{font-size:17px;line-height:1}
+.h1{font-size:30px;font-weight:750;letter-spacing:-.5px;line-height:1.35}
+.hsub{font-size:13px;margin:8px 0 24px;color:var(--dim)}
+.home-head{align-items:center;gap:24px;margin-bottom:8px;flex-wrap:nowrap}
+.home-head .h1{font-size:34px}
+.home-head .hsub{font-size:14px}
+.chips{gap:12px}
+.chip{min-width:118px;padding:13px 18px;border-radius:12px;background:var(--card);gap:4px;color:var(--txt);box-shadow:var(--shadow)}
+.chip span{font-size:12px}
+.chip b{font-size:25px;line-height:1.35;font-weight:750}
+.chip b small{font-size:11px}
+.card{border-radius:14px;padding:23px 25px;margin-bottom:20px;box-shadow:var(--shadow);min-width:0}
+.card h3{color:var(--txt);font-size:18px;font-weight:700;letter-spacing:0;margin-bottom:18px;gap:10px}
+.card h3 .hint{font-size:11px;color:var(--faint)}
+#v-home.on{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+#v-home>.home-head,#v-home>.theme-stats,#hero-conf{grid-column:1/-1}
+#v-home>.card{margin-bottom:0}
+.stats{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:var(--surface);border-color:var(--line2);padding:16px 18px;border-radius:10px;display:flex;flex-direction:column;gap:5px}
+.stat .n{font-size:26px;font-weight:750;line-height:1.35;overflow-wrap:anywhere}
+.stat .l{font-size:12px;color:var(--dim)}
+#home-stat-cards{grid-template-columns:repeat(6,minmax(0,1fr));margin-bottom:0;gap:0}
+#home-stat-cards .stat{background:none;border:0;border-right:1px solid var(--line2);border-radius:0;padding:8px 18px}
+#home-stat-cards .stat:first-child{padding-left:0}
+#home-stat-cards .stat:last-child{border-right:0}
+#home-stat-cards .n{font-size:25px}
+#home-stat-range,#stat-range{gap:3px!important;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:3px}
+#home-stat-range button,#stat-range button{border:0;padding:6px 14px;background:none;color:var(--dim);font-size:12px}
+#home-stat-range button.on,#stat-range button.on{background:var(--accent-fill);color:#fff}
+#stat-range{display:inline-flex;align-items:center;flex-wrap:wrap;width:fit-content}
+#stat-span{padding:0 10px}
+.btnrow{gap:10px;margin-bottom:20px}
+button{border-radius:8px;padding:10px 18px;font-size:13px;background:var(--accent-fill);line-height:1.5;transition:background .15s,transform .15s,opacity .15s}
+button:hover{filter:none;transform:translateY(-1px)}
+button:disabled{transform:none;opacity:.4}
+button.b-in{background:var(--accent-fill)}
+button.b-out{background:var(--orange)}
+button.b-leave,button.ghost{background:var(--card);color:var(--dim);border:1px solid var(--line)}
+button.ghost.on{background:var(--accent-fill);color:#fff;border-color:var(--accent-fill)}
+button.ghost:not(.on):hover{background:var(--accent-bg);color:var(--accent)}
+button.mini{padding:6px 12px;font-size:12px;border-radius:7px}
+#checkin-card>.btnrow button{flex:1;padding:11px 8px}
+#ck-stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:18px}
+#ck-stats .stat{padding:10px;gap:2px}
+#ck-stats .n{font-size:20px}
+#ck-stats .l{font-size:10px}
+.checkin-label{font-size:12px;color:var(--dim);margin-bottom:8px}
+.quick-fix{border-top:1px solid var(--line2);margin-top:14px;padding-top:12px;color:var(--dim);font-size:12px}
+.quick-fix summary{cursor:pointer;width:fit-content}
+.quick-fix .btnrow{margin:12px 0 0}
+input[type=text],input[type=date],textarea,select{background:var(--surface);border-color:var(--line);border-radius:8px;padding:11px 13px;font-size:13px;color:var(--txt)}
+input::placeholder,textarea::placeholder{color:var(--faint)}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
+form.add{padding-bottom:20px;border-bottom:1px solid var(--line2);gap:10px;margin-bottom:6px}
+form.add button{background:var(--accent-fill)}
+ul.list li{align-items:center;gap:12px;padding:16px 2px;border-bottom:1px solid var(--line2);font-size:14px;min-width:0}
+.txt{min-width:0;overflow-wrap:anywhere}
+.meta{font-size:12px;color:var(--dim);margin-top:5px;line-height:1.7}
+.chk{width:18px;height:18px;margin-top:0;accent-color:var(--accent-fill)}
+.badge{font-size:11px;padding:3px 9px;margin-top:0;border-radius:6px;color:var(--dim);border-color:var(--line);background:var(--surface)}
+.badge.p-hi,.badge.soon{color:var(--red);background:var(--warn-bg);border-color:var(--warn-line)}
+.badge.p-mid,.badge.info,.badge.ok{color:var(--accent);background:var(--info-bg);border-color:var(--info-line)}
+.badge.p-low{color:var(--dim)}
+.badge.lv{color:var(--purple);background:var(--lv-bg);border-color:var(--lv-line)}
+.del{background:transparent;color:var(--faint);border-radius:6px;font-size:20px;min-width:28px;min-height:28px}
+.del:hover{background:var(--warn-bg);color:var(--red)}
+.empty{padding:38px 12px;color:var(--faint);font-size:13px;line-height:1.9}
+#today-list li{border:1px solid var(--line2);border-radius:9px;padding:14px 12px;margin-top:9px;flex-wrap:wrap}
+#today-list .txt{flex:1 1 130px}
+#ck-list li{padding:10px 2px;font-size:13px}
+.hero-days{font-size:38px;color:var(--orange);letter-spacing:-1px}
+#hero-conf{padding:23px 25px;transition:border-color .15s}
+#hero-conf:hover{border-color:var(--accent)}
+.confgrid{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:18px}
+.conf{background:var(--surface);border-color:var(--line);border-radius:12px;padding:22px}
+.conf .abbr{font-size:23px;letter-spacing:-.5px;color:var(--accent)}
+.conf .full{margin:5px 0 18px;color:var(--dim)}
+.conf .row{border-top:1px solid var(--line2);gap:12px;padding:10px 0;font-size:12px;flex-wrap:wrap}
+.conf a{color:var(--accent)}
+.subtabs{padding:5px;gap:5px;border:1px solid var(--line);background:var(--card);border-radius:10px;width:fit-content;max-width:100%;margin-bottom:20px}
+.subtabs a{border:0;border-radius:7px;background:none;color:var(--dim);padding:7px 18px}
+.subtabs a.on{background:var(--accent-fill);color:#fff}
+.artgrid{grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:16px}
+.artgrid figure{background:var(--surface);border-color:var(--line);padding:10px}
+.artgrid figcaption{padding:6px 4px 2px;line-height:1.7}
+.miniscroll{border:1px solid var(--line);border-radius:9px;max-width:100%;overscroll-behavior-x:contain}
+th,td{border:0;border-bottom:1px solid var(--line2);border-right:1px solid var(--line2);padding:11px 16px;font-size:13px}
+th,td:first-child,th:first-child{background:var(--surface);color:var(--txt)}
+th.ghead{background:var(--accent-bg);color:var(--accent)}
+tr:last-child td{border-bottom:0}
+tr:hover td{background:var(--accent-bg)}
+.tcard{box-shadow:none;border-color:var(--line2);padding:18px;margin-bottom:16px}
+.tcard:last-child{margin-bottom:0}
+.tcard .tt{margin-bottom:12px;font-size:15px}
+#proj-list li,#rproj-list li{padding:20px 8px}
+#proj-list b,#rproj-list b{font-size:16px;font-weight:650}
+#f-retro{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end!important;gap:14px}
+#f-retro label{display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--dim);min-width:0}
+#f-retro textarea{width:100%;resize:vertical;min-height:110px}
+.retro-date{grid-column:1/-1;flex-direction:row!important;align-items:center;justify-content:space-between}
+.retro-date input{max-width:180px}
+#f-retro button{grid-column:3;justify-self:end;min-width:110px}
+#retro-list li{padding:22px 8px}
+#retro-list .meta{line-height:2;font-size:13px}
+#chart{height:220px!important;margin-top:20px;padding:20px 8px 0!important;border-top:1px solid var(--line2)}
+@media(min-width:1800px){main{padding-left:38px;padding-right:38px}.card{padding:28px 30px}.home-head .h1{font-size:38px}}
+@media(max-width:1250px){.home-head{flex-wrap:wrap}.home-head .chips{width:100%}.chip{flex:1}#home-stat-cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 0}#home-stat-cards .stat:nth-child(3){border-right:0}#home-stat-cards .stat:nth-child(4){padding-left:0}}
+@media(max-width:1000px){
+  #side{position:sticky;left:auto;top:0;bottom:auto;width:auto;margin:0;border-radius:0;border-width:0 0 1px;padding:14px 18px 10px;display:block;overflow:visible;z-index:30}
+  .brand{font-size:21px;padding:0 0 10px}.brand small,#clock,#side .foot{display:none}
+  #side nav{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:4px;margin:0;scrollbar-width:thin}
+  #side nav a{flex:none;padding:9px 12px;margin:0;font-size:13px;gap:8px}.nav-icon{width:17px;height:17px}
+  main{margin-left:0;padding:16px 20px 48px}.topbar{margin-bottom:12px}
+}
+@media(max-width:740px){
+  #v-home.on{grid-template-columns:minmax(0,1fr);gap:16px}.card{padding:20px;margin-bottom:16px}
+  #ck-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .h1,.home-head .h1{font-size:28px}.home-head{gap:18px;align-items:flex-start}.home-head .chips{gap:8px}
+  .chip{min-width:0;padding:12px}.chip b{font-size:23px}.chip span{font-size:11px}
+  .grid2{grid-template-columns:1fr}#f-retro{grid-template-columns:1fr}#f-retro button{grid-column:1}
+  ul.list li{flex-wrap:wrap}.list .txt{flex:1 1 150px}.list select{max-width:110px}
+  form.add input[type=date],form.add select{flex:1 1 130px}form.add>button{min-width:90px}
+  #home-stat-range{margin-left:0!important}#home-stat-span{display:none}.card h3{font-size:17px}
+  .conf .row{font-size:12px}#hero-conf button{margin-left:auto}
+}
+@media(max-width:440px){main{padding:12px 14px 40px}.card{padding:18px}.topbar{margin-bottom:10px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}#home-stat-cards .stat{padding:8px 10px}#home-stat-cards .n{font-size:21px}#home-stat-cards .l{font-size:10px}#home-stat-range button{padding:6px 11px}.hero-days{font-size:32px}.retro-date{flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10 12 3l9 7v10H3zM9 20v-7h6v7"/></symbol>
+  <symbol id="i-tasks" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12M3 6h1M3 12h1M3 18h1"/></symbol>
+  <symbol id="i-paper" viewBox="0 0 24 24"><path d="M5 3h9l5 5v13H5zM14 3v6h5M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6h7l2 3h9v11H3z"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="m3 10 18-7-7 18-3-8zM11 13 21 3"/></symbol>
+  <symbol id="i-problem" viewBox="0 0 24 24"><path d="M4 4h16v13H9l-5 4z"/></symbol>
+  <symbol id="i-retro" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m7 12 3 3 7-7"/></symbol>
+  <symbol id="i-stats" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20V7"/></symbol>
+</svg>
 <aside id="side">
-  <div class="brand">🧪 PIWorkspace<small>科研工作台 · Research Workbench</small></div>
-  <div id="clock"></div>
+  <div class="brand"><span>PI</span>Workspace<small>科研工作台</small></div>
   <nav>
     <div class="navg">今日</div>
-    <a href="#home" data-v="home">🏠 今日</a>
+    <a href="#home" data-v="home"><svg class="nav-icon" aria-hidden="true"><use href="#i-home"/></svg>今日</a>
     <div class="navg">执行</div>
-    <a href="#tasks" data-v="tasks">✅ 项目任务</a>
-    <a href="#proj" data-v="proj">📄 学术论文</a>
-    <a href="#rproj" data-v="rproj">🧪 科研项目</a>
+    <a href="#tasks" data-v="tasks"><svg class="nav-icon" aria-hidden="true"><use href="#i-tasks"/></svg>项目任务</a>
+    <a href="#proj" data-v="proj"><svg class="nav-icon" aria-hidden="true"><use href="#i-paper"/></svg>学术论文</a>
+    <a href="#rproj" data-v="rproj"><svg class="nav-icon" aria-hidden="true"><use href="#i-folder"/></svg>科研项目</a>
     <div class="navg">管理</div>
-    <a href="#conf" data-v="conf">🎯 投稿管理</a>
-    <a href="#problems" data-v="problems">🔥 当前问题</a>
+    <a href="#conf" data-v="conf"><svg class="nav-icon" aria-hidden="true"><use href="#i-send"/></svg>投稿管理</a>
+    <a href="#problems" data-v="problems"><svg class="nav-icon" aria-hidden="true"><use href="#i-problem"/></svg>当前问题</a>
     <div class="navg">统计</div>
-    <a href="#retro" data-v="retro">📝 每日复盘</a>
-    <a href="#stats" data-v="stats">📊 数据统计</a>
+    <a href="#retro" data-v="retro"><svg class="nav-icon" aria-hidden="true"><use href="#i-retro"/></svg>每日复盘</a>
+    <a href="#stats" data-v="stats"><svg class="nav-icon" aria-hidden="true"><use href="#i-stats"/></svg>数据统计</a>
   </nav>
-  <div class="foot">数据存于 500M 服务器<br>多端实时同步</div>
+  <div id="clock"></div>
+  <div class="foot">多端同步 · 随时记录</div>
 </aside>
 <main>
+  <div class="topbar"><button type="button" class="ghost" id="theme-toggle" aria-pressed="false"><span id="theme-icon" aria-hidden="true">☾</span><span id="theme-label">深色模式</span></button></div>
   <!-- ============ 今日 ============ -->
   <section id="v-home">
     <div class="home-head">
@@ -182,9 +361,9 @@ th.ghead{background:#efe9da; color:var(--faint); font-size:12px; letter-spacing:
       <div class="chips" id="home-chips"></div>
     </div>
 
-    <div class="card">
+    <div class="card theme-stats">
       <h3 style="display:flex; align-items:center; flex-wrap:wrap; gap:8px">
-        <span>📈 主题统计</span>
+        <span>主题统计</span>
         <span class="hint" id="home-stat-span"></span>
         <span id="home-stat-range" style="margin-left:auto; display:flex; gap:6px">
           <button class="mini ghost on" data-r="day" type="button">每日</button>
@@ -196,31 +375,26 @@ th.ghead{background:#efe9da; color:var(--faint); font-size:12px; letter-spacing:
       <div class="stats" id="home-stat-cards"></div>
     </div>
 
-    <div class="card">
-      <h3>⏱ 打卡记录 <span class="hint">一天内可多次开始 / 结束工作；请假只记一笔，不计入工时</span></h3>
+    <div class="card" id="checkin-card">
+      <h3>打卡记录 <span class="hint">记录每一段工作时间</span></h3>
       <div class="btnrow">
-        <button class="b-in" id="btn-in">▶ 开始工作 · 到位打卡</button>
-        <button class="b-out" id="btn-out">⏹ 结束工作 · 离开打卡</button>
-        <button class="b-leave" id="btn-leave">🏖 请假</button>
+        <button class="b-in" id="btn-in">▶ 开始工作</button>
+        <button class="b-out" id="btn-out">■ 结束工作</button>
+        <button class="b-leave" id="btn-leave">请假</button>
       </div>
       <div class="stats" id="ck-stats"></div>
-      <div class="grid2">
-        <div>
-          <div style="font-size:13px; color:var(--dim); margin-bottom:6px">今日打卡 / 请假明细</div>
-          <ul class="list" id="ck-list"></ul>
-        </div>
-        <div>
-          <div style="font-size:13px; color:var(--dim); margin-bottom:6px">可快速修正</div>
-          <div style="display:flex; flex-direction:column; gap:8px">
+      <div class="checkin-label">今日记录</div>
+      <ul class="list" id="ck-list"></ul>
+      <details class="quick-fix"><summary>修正打卡记录</summary>
+          <div class="btnrow">
             <button class="ghost mini" id="fix-close">关闭今天仍未结束工作段</button>
             <button class="ghost mini" id="fix-clear">清空今日打卡记录</button>
           </div>
-        </div>
-      </div>
+      </details>
     </div>
 
     <div class="card">
-      <h3>🗂 今日执行 <span class="hint">截止今天或最近创建的待办</span></h3>
+      <h3>今日执行 <span class="hint">把最需要推进的事放在眼前</span></h3>
       <form class="add" id="f-today">
         <input type="text" class="grow" id="t2-text" placeholder="临时任务，如：修实验图、回复审稿…" autocomplete="off">
         <button type="submit">添加</button>
@@ -269,11 +443,11 @@ th.ghead{background:#efe9da; color:var(--faint); font-size:12px; letter-spacing:
     <div class="h1">投稿管理</div>
     <div class="hsub">会议截止日历 + 自己的投稿目标</div>
     <div class="card">
-      <h3>📅 会议日历 <span class="hint" id="conf-updated"></span></h3>
+      <h3>会议日历 <span class="hint" id="conf-updated"></span></h3>
       <div class="confgrid" id="conf-wrap"></div>
     </div>
     <div class="card">
-      <h3>🎯 我的投稿目标</h3>
+      <h3>我的投稿目标</h3>
       <form class="add" id="f-target">
         <input type="text" class="grow" id="g-name" placeholder="目标名称，如 ICLR 2027" autocomplete="off">
         <input type="date" id="g-dl">
@@ -317,7 +491,7 @@ th.ghead{background:#efe9da; color:var(--faint); font-size:12px; letter-spacing:
       <ul class="list" id="proj-list"></ul>
     </div>
     <div class="card" id="proj-untagged-card" style="display:none">
-      <h3>📄 未归类表格 <span class="hint">推送时未指定课题的表格，可在 tables.json 里加 "topic" 字段归类</span></h3>
+      <h3>未归类表格 <span class="hint">尚未关联到论文的实验结果</span></h3>
       <div id="proj-untagged"></div>
     </div>
   </section>
@@ -344,16 +518,16 @@ th.ghead{background:#efe9da; color:var(--faint); font-size:12px; letter-spacing:
 
   <!-- ============ 课题详情 ============ -->
   <section id="v-projdet">
-    <button class="ghost mini" style="margin-bottom:12px" onclick="location.hash='#proj'">← 返回科研工作</button>
+    <button class="ghost mini" style="margin-bottom:12px" onclick="location.hash='#proj'">← 返回学术论文</button>
     <div class="h1" id="pd-name"></div>
     <div class="hsub" id="pd-meta"></div>
     <div class="subtabs" id="pd-tabs" style="display:none"></div>
     <div class="card">
-      <h3>📊 数据表格 <span class="hint">由工作站推送，topic 字段匹配课题名即归入此处</span></h3>
+      <h3>实验数据 <span class="hint">按实验标签查看对比结果</span></h3>
       <div id="pd-tables"></div>
     </div>
     <div class="card">
-      <h3>🖼 图片 <span class="hint">push_artifacts.py 推送并指定课题</span></h3>
+      <h3>研究图片 <span class="hint">可视化与实验图表</span></h3>
       <div class="artgrid" id="pd-artifacts"></div>
     </div>
   </section>
@@ -363,12 +537,12 @@ th.ghead{background:#efe9da; color:var(--faint); font-size:12px; letter-spacing:
     <div class="h1">每日复盘</div>
     <div class="hsub">今天做了什么、卡在哪、明天重点——一天一条，同日重填即覆盖</div>
     <div class="card">
-      <form class="add" id="f-retro" style="align-items:flex-start">
-        <input type="date" id="r-date" style="flex:0 0 150px">
-        <input type="text" class="grow" id="r-done" placeholder="✅ 今日完成（一句话）" autocomplete="off">
-        <input type="text" class="grow" id="r-block" placeholder="🧱 卡点 / 经验" autocomplete="off">
-        <input type="text" class="grow" id="r-next" placeholder="➡️ 明日重点" autocomplete="off">
-        <button type="submit">保存</button>
+      <form class="add" id="f-retro">
+        <label class="retro-date">记录日期 <input type="date" id="r-date"></label>
+        <label>今日完成<textarea id="r-done" rows="4" placeholder="今天推进了哪些事？"></textarea></label>
+        <label>卡点 / 经验<textarea id="r-block" rows="4" placeholder="遇到什么问题，有什么收获？"></textarea></label>
+        <label>明日重点<textarea id="r-next" rows="4" placeholder="明天最需要完成的事"></textarea></label>
+        <button type="submit">保存复盘</button>
       </form>
       <ul class="list" id="retro-list"></ul>
     </div>
@@ -395,6 +569,19 @@ th.ghead{background:#efe9da; color:var(--faint); font-size:12px; letter-spacing:
 </main>
 <script>
 "use strict";
+function updateThemeButton(){
+  var dark=document.documentElement.dataset.theme==="dark";
+  document.getElementById("theme-toggle").setAttribute("aria-pressed",String(dark));
+  document.getElementById("theme-icon").textContent=dark?"☼":"☾";
+  document.getElementById("theme-label").textContent=dark?"浅色模式":"深色模式";
+}
+document.getElementById("theme-toggle").addEventListener("click",function(){
+  var theme=document.documentElement.dataset.theme==="dark"?"light":"dark";
+  document.documentElement.dataset.theme=theme;
+  try { localStorage.setItem("piworkspace-theme",theme); } catch(e) {}
+  updateThemeButton();
+});
+updateThemeButton();
 function esc(s){
   return String(s==null?"":s).replace(/[&<>"']/g,function(c){
     return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
@@ -489,23 +676,21 @@ function renderHome(){
   /* 统计 chips */
   var openTasks=state.tasks.filter(function(t){return !t.done}).length;
   var doneTasks=state.tasks.filter(function(t){return t.done}).length;
-  var dur=fmtDur(workMinutesToday());
-  var openP=state.problems.filter(function(p){return p.open}).length;
+  var dur=(workMinutesToday()/60).toFixed(1).replace(/\.0$/,"")+"<small>h</small>";
   document.getElementById("home-chips").innerHTML=
     '<a class="chip" href="#tasks"><span>待办</span><b>'+openTasks+'<small>项</small></b></a>'+
     '<a class="chip" href="#tasks"><span>已完成</span><b>'+doneTasks+'<small>项</small></b></a>'+
-    '<a class="chip" href="#proj"><span>学术论文</span><b>'+state.projects.length+'<small>篇</small></b></a>'+
-    '<a class="chip" href="#rproj"><span>科研项目</span><b>'+state.rprojects.length+'<small>个</small></b></a>'+
-    '<a class="chip" href="#problems"><span>待解决问题</span><b>'+openP+'<small>个</small></b></a>';
+    '<a class="chip" href="#stats"><span>今日工作</span><b>'+dur+'</b></a>';
   renderHeroConf();
   renderHomeStats();
+  renderToday();
   /* 打卡统计 */
   var items=todayItems();
   var leaves=items.filter(function(c){return c.type==="leave"}).length;
   var open=openSegment();
   document.getElementById("ck-stats").innerHTML=
     stat(items.filter(function(c){return c.type!=="leave"}).length,"今日打卡次数")+
-    stat(fmtDur(workMinutesToday()),"今日工作时长")+
+    stat(dur,"今日工作时长")+
     stat(open?1:0,"未结束工作段",open?"warn":"")+
     stat(leaves,"今日请假");
   /* 按钮 */
@@ -538,7 +723,7 @@ function renderHeroConf(){
   el.style.display="block";
   var c=best.c;
   document.getElementById("hc-days").textContent="D-"+best.n;
-  document.getElementById("hc-days").style.color=best.n<=21?"var(--red)":"var(--accent)";
+  document.getElementById("hc-days").style.color=best.n<=21?"var(--red)":"var(--orange)";
   document.getElementById("hc-kind").textContent="距 "+(c.abbr||"会议")+" "+best.kind+" 截止";
   document.getElementById("hc-name").textContent=(c.abbr||"")+" "+(c.year||"")+(c.rank?" · "+c.rank:"");
   document.getElementById("hc-detail").innerHTML=
@@ -590,8 +775,8 @@ function renderToday(){
       else if(d===0) badge='<span class="badge soon">今天到期</span>';
       else badge='<span class="badge info">剩 '+d+' 天</span>';
     }
-    return '<li><input type="checkbox" class="chk" onchange="toggleTask(\''+t.id+'\')">'+
-      '<div class="txt">'+esc(t.text)+'</div>'+badge+'</li>';
+    return '<li><input type="checkbox" class="chk" aria-label="'+esc('完成任务：'+t.text)+'" onchange="toggleTask(\''+t.id+'\')">'+
+      '<div class="txt">'+esc(t.text)+'</div>'+prioBadge(t.prio)+badge+'</li>';
   }).join("");
 }
 
@@ -625,7 +810,7 @@ function renderTasks(){
       else badge+='<span class="badge '+(d<=3?"soon":"info")+'">剩 '+d+' 天</span>';
     }
     return '<li class="'+(t.done?"done":"")+'">'+
-      '<input type="checkbox" class="chk" '+(t.done?"checked":"")+' onchange="toggleTask(\''+t.id+'\')">'+
+      '<input type="checkbox" class="chk" aria-label="'+esc('完成任务：'+t.text)+'" '+(t.done?"checked":"")+' onchange="toggleTask(\''+t.id+'\')">'+
       '<div class="txt">'+esc(t.text)+(t.due?'<div class="meta">截止 '+esc(t.due)+'</div>':'')+'</div>'+badge+
       '<button class="del" onclick="delTask(\''+t.id+'\')" title="删除">×</button></li>';
   }).join("");
@@ -848,13 +1033,13 @@ function renderDetailBody(p){
   var tbox=document.getElementById("pd-tables"), abox=document.getElementById("pd-artifacts");
   var mine=(tablesCache.tables||[]).filter(function(t){return belongsTo(t,p)&&(pdExp==="全部"||t.exp===pdExp)});
   tbox.innerHTML=mine.length?mine.map(function(t){return tableHtml(t)}).join("")
-    :'<div class="empty">'+(pdExp==="全部"?"该课题":"「"+esc(pdExp)+"」")+'还没有表格。推送 tables.json 时给表加 "topic":"'+esc(p.name)+'"'+(pdExp==="全部"?"":" 和 exp:"+esc(pdExp))+' 即归入此处。</div>';
+    :'<div class="empty">'+(pdExp==="全部"?"这篇论文":"「"+esc(pdExp)+"」")+'还没有实验数据，关联结果后会显示在这里。</div>';
   var arts=(artCache.artifacts||[]).filter(function(x){return belongsTo(x,p)&&(pdExp==="全部"||x.exp===pdExp)});
   abox.innerHTML=arts.length?arts.map(function(x){
     return '<figure><img loading="lazy" src="/files/'+encodeURIComponent(x.file||"")+'" alt="'+esc(x.title||x.file||"")+'">'+
       '<figcaption>'+esc(x.title||x.file||"")+(x.note?' · '+esc(x.note):'')+'</figcaption></figure>';
   }).join("")
-    :'<div class="empty" style="grid-column:1/-1">'+(pdExp==="全部"?"该课题":"「"+esc(pdExp)+"」")+'还没有图片。工作站用 scripts/push_artifacts.py --topic "'+esc(p.name)+'"'+(pdExp==="全部"?"":" --exp '"+esc(pdExp)+"'")+' 推送后显示在这里。</div>';
+    :'<div class="empty" style="grid-column:1/-1">'+(pdExp==="全部"?"这篇论文":"「"+esc(pdExp)+"」")+'还没有研究图片，关联图片后会显示在这里。</div>';
 }
 function renderRproj(){
   var open=state.rprojects.filter(function(p){return p.status==="进行中"}).length;
@@ -903,9 +1088,9 @@ function renderRetro(){
   if(!items.length){ul.innerHTML='<div class="empty">还没有复盘记录，今天写第一条吧</div>';return}
   ul.innerHTML=items.map(function(r){
     var lines=[];
-    if(r.done) lines.push("✅ "+r.done);
-    if(r.block) lines.push("🧱 "+r.block);
-    if(r.next) lines.push("➡️ "+r.next);
+    if(r.done) lines.push("今日完成 · "+r.done);
+    if(r.block) lines.push("卡点 / 经验 · "+r.block);
+    if(r.next) lines.push("明日重点 · "+r.next);
     var todayCls=(r.date===today())?' <span class="badge info">今天</span>':"";
     return '<li><div class="txt"><b>'+esc(r.date)+'</b>'+todayCls+
       '<div class="meta" style="white-space:pre-wrap">'+lines.map(esc).join("\n")+'</div></div>'+
@@ -971,8 +1156,9 @@ function renderStats(){
   var buckets=[];
   if(statRange==="day"){
     title.textContent="今日暂无趋势图，切到本周/本月/本年查看每日工时";
-    chart.innerHTML=""; return;
+    chart.innerHTML=""; chart.style.display="none"; return;
   }
+  chart.style.display="flex";
   var labelMode=(statRange==="week")?"day":(statRange==="month"?"day":"month");
   title.textContent=labelMode==="day"?"每日工作时长":"每月工作时长";
   if(statRange==="week"){
@@ -993,7 +1179,7 @@ function renderStats(){
     var h=Math.round(v/max*100);
     return '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:3px" title="'+b.key+'：'+fmtDur(v)+'">'+
       '<div style="font-size:9px;color:var(--faint)">'+(v>0?fmtDur(v):"")+'</div>'+
-      '<div style="width:70%;'+(v>0?'height:'+Math.max(h,3)+'%;background:linear-gradient(180deg,#d9b97e,#8a6d3b);border-radius:4px 4px 0 0':'height:2px;background:var(--line)')+'"></div>'+
+      '<div style="width:70%;'+(v>0?'height:'+Math.max(h,3)+'%;background:var(--accent);border-radius:5px 5px 0 0':'height:2px;background:var(--line)')+'"></div>'+
       '<div style="font-size:9px;color:var(--faint)">'+b.label+'</div></div>';
   }).join("");
 }
@@ -1012,7 +1198,11 @@ function showSection(v){
     var el=document.getElementById("v-"+name);
     if(el) el.className=(name===v)?"on":"";
     var tab=document.querySelector('#side nav a[data-v="'+name+'"]');
-    if(tab) tab.className=(name===v)?"on":"";
+    if(tab){
+      var active=name===v||(v==="projdet"&&name==="proj");
+      tab.className=active?"on":"";
+      if(active) tab.setAttribute("aria-current","page"); else tab.removeAttribute("aria-current");
+    }
   });
 }
 function route(){
