@@ -420,7 +420,7 @@ dialog h3{font-size:21px;margin-bottom:20px}
     <div class="card">
       <h3>今日执行 <span class="hint">把最需要推进的事放在眼前</span></h3>
       <form class="add" id="f-today">
-        <input type="text" class="grow" id="t2-text" placeholder="临时任务，如：修实验图、回复审稿…" autocomplete="off">
+        <input type="text" class="grow" id="t2-text" aria-label="今日任务名称" placeholder="临时任务，如：修实验图、回复审稿…" autocomplete="off" required>
         <button type="submit">添加</button>
       </form>
       <ul class="list" id="today-list"></ul>
@@ -448,7 +448,7 @@ dialog h3{font-size:21px;margin-bottom:20px}
     <div class="card">
       <div class="stats" id="task-stats"></div>
       <form class="add" id="f-task">
-        <input type="text" class="grow" id="t-text" placeholder="要干的事…" autocomplete="off">
+        <input type="text" class="grow" id="t-text" aria-label="任务名称" placeholder="先填写任务名称，再点击添加…" autocomplete="off" required>
         <input type="date" id="t-due" title="截止日（可选）">
         <select id="t-prio" title="优先级">
           <option value="">优先级</option>
@@ -885,9 +885,14 @@ function delTask(id){
   state.tasks=state.tasks.filter(function(t){return t.id!==id});
   renderTasks(); renderHome(); saveData();
 }
-function addTask(text,due,prio){
-  state.tasks.push({id:uid(),text:text,due:due||"",done:false,prio:prio||"",created:new Date().toISOString(),completed_at:""});
-  renderTasks(); renderHome(); saveData();
+async function addTask(text,due,prio){
+  var task={id:uid(),text:text,due:due||"",done:false,prio:prio||"",created:new Date().toISOString(),completed_at:""};
+  state.tasks.push(task);
+  var ok=await saveData();
+  if(!ok) state.tasks=state.tasks.filter(function(t){return t.id!==task.id});
+  renderTasks(); renderHome();
+  if(ok) markSync("任务已添加");
+  return ok;
 }
 
 /* ================= 投稿管理 ================= */
@@ -1358,19 +1363,23 @@ document.getElementById("fix-clear").addEventListener("click",function(){
   state.checkins=state.checkins.filter(function(c){return !isToday(c.ts)});
   renderHome(); saveData();
 });
-document.getElementById("f-today").addEventListener("submit",function(e){
+document.getElementById("f-today").addEventListener("submit",async function(e){
   e.preventDefault();
   var el=document.getElementById("t2-text"), v=el.value.trim();
-  if(!v) return;
-  addTask(v,today());
-  el.value="";
+  if(!v){markSync("请先填写任务名称",true);el.focus();return;}
+  var button=this.querySelector('[type=submit]');button.disabled=true;
+  if(await addTask(v,today())) el.value="";
+  button.disabled=false;
 });
-document.getElementById("f-task").addEventListener("submit",function(e){
+document.getElementById("f-task").addEventListener("submit",async function(e){
   e.preventDefault();
   var el=document.getElementById("t-text"), v=el.value.trim();
-  if(!v) return;
-  addTask(v,document.getElementById("t-due").value,document.getElementById("t-prio").value);
-  el.value=""; document.getElementById("t-due").value=""; document.getElementById("t-prio").value="";
+  if(!v){markSync("请先填写任务名称",true);el.focus();return;}
+  var button=this.querySelector('[type=submit]');button.disabled=true;
+  if(await addTask(v,document.getElementById("t-due").value,document.getElementById("t-prio").value)){
+    el.value=""; document.getElementById("t-due").value=""; document.getElementById("t-prio").value="";
+  }
+  button.disabled=false;
 });
 document.getElementById("f-target").addEventListener("submit",function(e){
   e.preventDefault();
